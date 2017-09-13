@@ -1,0 +1,43 @@
+# -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+# def options(opt):
+#     pass
+
+# def configure(conf):
+#     conf.check_nonfatal(header_name='stdint.h', define_name='HAVE_STDINT_H')
+
+def build(bld):
+    module = bld.create_ns3_module('tcp-eval', ['core'])
+    module.source = [
+        'model/configure-topology.cc',
+        'model/dumbbell-topology.cc',
+        'model/parking-lot-topology.cc',
+        'model/traffic-parameters.cc',
+        'model/create-traffic.cc',  
+        'model/point-to-point-parking-lot.cc', 
+        'model/evaluator.cc',
+        'model/eval-app.cc',
+        'model/eval-ts.cc',
+        #'model/eval-stats.cc',
+        ]
+
+    headers = bld(features='ns3header')
+    headers.module = 'tcp-eval'
+    headers.source = [
+        'model/configure-topology.h',
+        'model/dumbbell-topology.h',
+        'model/parking-lot-topology.h',
+        'model/traffic-parameters.h',
+        'model/create-traffic.h',
+        'model/point-to-point-parking-lot.h', 
+        'model/evaluator.h',
+        'model/eval-app.h',
+        'model/eval-ts.h',
+        #'model/eval-stats.h',
+        ]
+
+    if (bld.env['ENABLE_EXAMPLES']):
+        bld.recurse('examples')
+
+    # bld.ns3_python_bindings()
+
