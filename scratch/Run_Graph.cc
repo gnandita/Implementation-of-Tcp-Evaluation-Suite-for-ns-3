@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
  cmd.Parse (argc,argv);
  if(useAqm=="true")
  {
-   if(Aqm_Name=="RedQueueDisc" ||  Aqm_Name=="PieQueueDisc" || Aqm_Name=="CoDelQueueDisc"||  	  Aqm_Name=="FqCoDelQueueDisc")
+   if(Aqm_Name=="RedQueueDisc" ||  Aqm_Name=="PieQueueDisc" || Aqm_Name=="CoDelQueueDisc"|| Aqm_Name=="FqCoDelQueueDisc")
    {
      queueName=Aqm_Name;
    }
@@ -37,17 +37,15 @@ else
  infile.open("latest_dir.dat");
  std::string default_directory ;
  infile >> default_directory;
- uint32_t i=0,expt_num, num_Tcp;
-  std::string transport_prot[] = {"TcpNewReno"} ;
-  std::string run="";
-  std::string gnuPlot = "";
-  num_Tcp=1;
-  // std::string gnuPlotR = "";
-  for(expt_num =1;expt_num<=1;expt_num++)
+ uint32_t i=0,expt_num, num_Tcp; 
+ std::string transport_prot[] = {"TcpNewReno","TcpHybla","TcpHighSpeed","TcpHtcp","TcpVegas","TcpScalable","TcpVeno","TcpBic","TcpYeah", "TcpIllinois","TcpWestwood","TcpWestwoodPlus", "TcpLedbat"};
+ std::string run="";
+ std::string gnuPlot = "";
+ num_Tcp=13;
+ for(expt_num =1;expt_num<=1;expt_num++)
    {
     gnuPlot = "gnuplot -e 'set terminal png size 640,640; set output \"ResultWith2TcpVariant-"+scenarioName+"-"+queueName+"\"; set xrange[]   reverse; plot ";
-   // gnuPlotR = "gnuplot -e 'set terminal png size 640,640; set output \"TCPEvalOutput/"+ scenarioName +"/EXPT-"+std::to_string(expt_num)+"/  	     ResultR.png\"; set xrange[] reverse; plot ";        
-   for(i=0; i<1;i++)
+   for(i=0; i<num_Tcp;i++)
     {  	
       if(useAqm=="false")
        {
@@ -62,28 +60,20 @@ else
       std::string proEllipse = std::string ("python src/tcp-eval/ellipsemaker ") + scenarioName + " " + transport_prot[i] +" "+ queueName  	 +" "+default_directory;
      std::string Result = proQdelThr ;
      std::string Ellipse = proEllipse ;             
-     //std::string ResultR = proQdelThr + " R";
-     //std::string EllipseR = proEllipse + " R";
      system(Result.c_str());
      system(Ellipse.c_str());              
-     //system(ResultR.c_str());
-     //system(EllipseR.c_str());
      std::string graphName =std::string("\""+default_directory+"/"+scenarioName+"/ellipse/dat_files/"+transport_prot[i]+"-"+queueName 
-     +"-ellipse.dat\" title \"")+transport_prot[i]+std::string("\" with lines "); 
-     //std::string graphNameR =std::string("\"TCPEvalOutput/"+ scenarioName +"/EXPT-"+std::to_string(expt_num)+"/"+transport_prot[i]  	  	+"_ellipseR.dat\" title \"")+transport_prot[i]+std::string("\" with lines "); 
+     +"-ellipse.dat\" title \"")+transport_prot[i]+std::string("\" with lines ");  
      if (i!=num_Tcp-1)
       {
        gnuPlot = gnuPlot + graphName + std::string(",");
-       //gnuPlotR = gnuPlotR + graphNameR + std::string(",");
       }
      else
       {
        gnuPlot += graphName + std::string("'");
-       //gnuPlotR += graphNameR + std::string("'");
       }
     }
     system(gnuPlot.c_str());
-    //system(gnuPlotR.c_str());
   }    
   return(0);
 }

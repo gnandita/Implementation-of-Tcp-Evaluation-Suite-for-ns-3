@@ -107,34 +107,20 @@ main (int argc, char *argv[])
   Config::SetDefault ("ns3::TrafficParameters::SimulationTime", TimeValue (simulationTime));
   Config::SetDefault ("ns3::ParkingLotTopology::CrossLinkDelay", TimeValue (crossLinkDelay));
 
-  // Set TCP variant
-  if (tcp_variant.compare ("TcpTahoe") == 0)
-    { // tahow and newReno are not present in the latest version
-      //Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpTahoe::GetTypeId ()));
-    }
-  else if (tcp_variant.compare ("TcpReno") == 0)
-    {
-      //Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpReno::GetTypeId ()));
-    }
-  else if (tcp_variant.compare ("TcpNewReno") == 0)
-    {
-      Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::GetTypeId ()));
-    }
-  else if (tcp_variant.compare ("TcpWestwood") == 0)
-    { // the default protocol type in ns3::TcpWestwood is WESTWOOD
+ // Set TCP variant
+  std::string ns3_tcp_variant="ns3::"+tcp_variant;
+  if (ns3_tcp_variant.compare ("ns3::TcpWestwoodPlus") == 0)
+    { 
+      // TcpWestwoodPlus is not an actual TypeId name; we need TcpWestwood here
       Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpWestwood::GetTypeId ()));
-      Config::SetDefault ("ns3::TcpWestwood::FilterType", EnumValue (TcpWestwood::TUSTIN));
-    }
-  else if (tcp_variant.compare ("TcpWestwoodPlus") == 0)
-    {
-      Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpWestwood::GetTypeId ()));
+      // the default protocol type in ns3::TcpWestwood is WESTWOOD
       Config::SetDefault ("ns3::TcpWestwood::ProtocolType", EnumValue (TcpWestwood::WESTWOODPLUS));
-      Config::SetDefault ("ns3::TcpWestwood::FilterType", EnumValue (TcpWestwood::TUSTIN));
     }
   else
     {
-      NS_LOG_DEBUG ("Invalid TCP version");
-      exit (1);
+      TypeId tcpTid;
+      NS_ABORT_MSG_UNLESS (TypeId::LookupByNameFailSafe (ns3_tcp_variant, &tcpTid), "TypeId " << ns3_tcp_variant << " not found");
+      Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TypeId::LookupByName (ns3_tcp_variant)));
     }
 
   Ptr<TrafficParameters> trafficParams = CreateObject <TrafficParameters> ();
