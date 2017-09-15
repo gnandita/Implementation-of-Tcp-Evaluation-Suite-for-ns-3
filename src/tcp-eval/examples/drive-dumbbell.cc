@@ -100,44 +100,25 @@ main (int argc, char *argv[])
   Config::SetDefault ("ns3::TrafficParameters::UseAqm", BooleanValue (useAqm));
   Config::SetDefault ("ns3::TrafficParameters::SimulationTime", TimeValue (simulationTime));
 
-
   // Set TCP variant
-  /*if (tcp_variant.compare ("TcpTahoe") == 0)
-    {
-      //Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpTahoe::GetTypeId ()));
-    }
-  else if (tcp_variant.compare ("TcpReno") == 0)
-    {
-     // Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpReno::GetTypeId ()));
-    }
-  else*/ if (tcp_variant.compare ("TcpNewReno") == 0)
-    {
-      Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpNewReno::GetTypeId ()));
-    }
-  else if (tcp_variant.compare ("TcpWestwood") == 0)
-    { // the default protocol type in ns3::TcpWestwood is WESTWOOD
+  std::string ns3_tcp_variant="ns3::"+tcp_variant;
+  std::cout<<tcp_variant<<"\n";
+  if (ns3_tcp_variant.compare ("ns3::TcpWestwoodPlus") == 0)
+    { 
+      // TcpWestwoodPlus is not an actual TypeId name; we need TcpWestwood here
       Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpWestwood::GetTypeId ()));
-      Config::SetDefault ("ns3::TcpWestwood::FilterType", EnumValue (TcpWestwood::TUSTIN));
-    }
-  else if (tcp_variant.compare ("TcpWestwoodPlus") == 0)
-    {
-      Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpWestwood::GetTypeId ()));
+      // the default protocol type in ns3::TcpWestwood is WESTWOOD
       Config::SetDefault ("ns3::TcpWestwood::ProtocolType", EnumValue (TcpWestwood::WESTWOODPLUS));
-      Config::SetDefault ("ns3::TcpWestwood::FilterType", EnumValue (TcpWestwood::TUSTIN));
-    }
-  else if (tcp_variant.compare ("TcpVegas") == 0)
-    {
-       Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpVegas::GetTypeId ()));
     }
   else
     {
-      NS_LOG_DEBUG ("Invalid TCP version");
-      exit (1);
+      TypeId tcpTid;
+      NS_ABORT_MSG_UNLESS (TypeId::LookupByNameFailSafe (ns3_tcp_variant, &tcpTid), "TypeId " << ns3_tcp_variant << " not found");
+      Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TypeId::LookupByName (ns3_tcp_variant)));
     }
-
   Ptr<TrafficParameters> trafficParams = CreateObject <TrafficParameters> ();
   trafficParams->SetTcpVarient(tcp_variant);
-   trafficParams->SetAqmName(Aqm_Name);
+  trafficParams->SetAqmName(Aqm_Name);
   Ptr<DumbbellTopology> dumbbell = CreateObject<DumbbellTopology> ();
   dumbbell->CreateDumbbellTopology (trafficParams, fileName);
 
