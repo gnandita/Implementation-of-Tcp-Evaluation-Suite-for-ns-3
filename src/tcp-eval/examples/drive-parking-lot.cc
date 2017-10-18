@@ -19,7 +19,7 @@
  *          Mohit P. Tahiliani <tahiliani@nitk.edu.in>
  */
 
-// This example is a part of TCL evaluation suite and 
+// This example is a part of TCL evaluation suite and
 // creates a parking-lot scenario.
 
 #include "ns3/core-module.h"
@@ -55,10 +55,10 @@ main (int argc, char *argv[])
   bool          useAqm = false;
   Time          crossLinkDelay;
   Time          simulationTime;
-  std::string   Aqm_Name="";
+  std::string   Aqm_Name = "";
   // Set default TCP variant
   std::string tcp_variant = "TcpNewReno";
-  
+
   // Default filename to store results
   std::string fileName = "TcpEvalParkingLot";
 
@@ -107,10 +107,10 @@ main (int argc, char *argv[])
   Config::SetDefault ("ns3::TrafficParameters::SimulationTime", TimeValue (simulationTime));
   Config::SetDefault ("ns3::ParkingLotTopology::CrossLinkDelay", TimeValue (crossLinkDelay));
 
- // Set TCP variant
-  std::string ns3_tcp_variant="ns3::"+tcp_variant;
+  // Set TCP variant
+  std::string ns3_tcp_variant = "ns3::" + tcp_variant;
   if (ns3_tcp_variant.compare ("ns3::TcpWestwoodPlus") == 0)
-    { 
+    {
       // TcpWestwoodPlus is not an actual TypeId name; we need TcpWestwood here
       Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpWestwood::GetTypeId ()));
       // the default protocol type in ns3::TcpWestwood is WESTWOOD
@@ -124,11 +124,11 @@ main (int argc, char *argv[])
     }
 
   Ptr<TrafficParameters> trafficParams = CreateObject <TrafficParameters> ();
-  trafficParams->SetTcpVarient(tcp_variant);
-  trafficParams->SetAqmName(Aqm_Name);
+  trafficParams->SetTcpVarient (tcp_variant);
+  trafficParams->SetAqmName (Aqm_Name);
   Ptr<ParkingLotTopology> parkingLot = CreateObject<ParkingLotTopology> ();
   parkingLot->CreateParkingLotTopology (trafficParams, fileName);
-  
+
   Simulator::Run ();
   Simulator::Destroy ();
 

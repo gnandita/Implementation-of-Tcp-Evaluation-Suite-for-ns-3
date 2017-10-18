@@ -304,7 +304,7 @@ Ptr<NetDevice> PointToPointParkingLotHelper::GetRouterCrossSourceNetDevice (uint
   return m_routerToCrossSourceDevices[routerIndex].Get (crossSourceIndex);
 }
 
-Ptr<NetDevice> PointToPointParkingLotHelper::GetRouterCrossSinkNetDevice(uint32_t routerIndex, uint32_t crossSinkIndex) const
+Ptr<NetDevice> PointToPointParkingLotHelper::GetRouterCrossSinkNetDevice (uint32_t routerIndex, uint32_t crossSinkIndex) const
 {
   return m_routerToCrossSinkDevices[routerIndex].Get (crossSinkIndex);
 }

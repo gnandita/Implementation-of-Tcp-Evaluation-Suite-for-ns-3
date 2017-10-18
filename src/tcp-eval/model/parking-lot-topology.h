@@ -59,7 +59,7 @@ public:
    */
   ~ParkingLotTopology (void);
 
-   void DestroyTrace (Evaluator et);
+  void DestroyTrace (Evaluator et);
 
   /**
    * \brief Converts a value to string.

@@ -74,13 +74,13 @@ void
 DumbbellTopology::CreateDumbbellTopology (Ptr<TrafficParameters> traffic, std::string fileName)
 {
   uint32_t nBottlenecks = 1;
- 
+
   // Set default parameters for topology
   SetTopologyParameters (traffic, nBottlenecks);
   std::string m_aqm;
   TrafficControlHelper tchBottleneck;
   Ptr<QueueDisc> m_queue;
-  
+
   PointToPointHelper pointToPointRouter, pointToPointLeaf;
   pointToPointRouter.SetDeviceAttribute  ("DataRate", StringValue (to_string<double> (m_bottleneckBandwidth) + std::string ("Mbps")));
   pointToPointRouter.SetChannelAttribute ("Delay", StringValue (to_string<double> (m_bottleneckDelay.ToDouble (Time::S)) + std::string ("s")));
@@ -97,7 +97,7 @@ DumbbellTopology::CreateDumbbellTopology (Ptr<TrafficParameters> traffic, std::s
   uint32_t nVoiceFlow = traffic->GetNumOfVoiceFlows ();
   uint32_t nFwdStreamingFlow = traffic->GetNumOfFwdStreamingFlows ();
   uint32_t nRevStreamingFlow = traffic->GetNumOfRevStreamingFlows ();
- 
+
   // Calculate total leaf nodes at each side
   uint32_t nLeftLeaf = nFwdFtpFlow + nRevFtpFlow + nVoiceFlow + nFwdStreamingFlow + nRevStreamingFlow;
   uint32_t nRightLeaf = nLeftLeaf;
@@ -114,23 +114,23 @@ DumbbellTopology::CreateDumbbellTopology (Ptr<TrafficParameters> traffic, std::s
 
   if (traffic->IsAqmUsed () == true)
     {
-      SetAqmParameters (traffic->GetAqmName());
-      m_aqm ="ns3::"+traffic->GetAqmName();    
+      SetAqmParameters (traffic->GetAqmName ());
+      m_aqm = "ns3::" + traffic->GetAqmName ();
       uint16_t handle =  tchBottleneck.SetRootQueueDisc (m_aqm);
-      if(m_aqm=="ns3::FqCoDelQueueDisc")
+      if (m_aqm == "ns3::FqCoDelQueueDisc")
         {
-         tchBottleneck.AddPacketFilter (handle, "ns3::FqCoDelIpv4PacketFilter");
-         tchBottleneck.AddPacketFilter (handle, "ns3::FqCoDelIpv6PacketFilter"); 
+          tchBottleneck.AddPacketFilter (handle, "ns3::FqCoDelIpv4PacketFilter");
+          tchBottleneck.AddPacketFilter (handle, "ns3::FqCoDelIpv6PacketFilter");
         }
-      m_queue=tchBottleneck.Install (dumbbell.GetLeft ()->GetDevice (0)).Get(0);
-      tchBottleneck.Install (dumbbell.GetRight ()->GetDevice (0));  
+      m_queue = tchBottleneck.Install (dumbbell.GetLeft ()->GetDevice (0)).Get (0);
+      tchBottleneck.Install (dumbbell.GetRight ()->GetDevice (0));
     }
   else
     {
       m_aqm = "ns3::PfifoFastQueueDisc";
       tchBottleneck.SetRootQueueDisc ("ns3::PfifoFastQueueDisc", "Limit", UintegerValue (m_nonBottleneckBuffer));
-      m_queue = tchBottleneck.Install (dumbbell.GetLeft ()->GetDevice (0)).Get(0);
-      tchBottleneck.Install (dumbbell.GetRight ()->GetDevice (0)); 
+      m_queue = tchBottleneck.Install (dumbbell.GetLeft ()->GetDevice (0)).Get (0);
+      tchBottleneck.Install (dumbbell.GetRight ()->GetDevice (0));
     }
 
 
@@ -177,21 +177,21 @@ DumbbellTopology::CreateDumbbellTopology (Ptr<TrafficParameters> traffic, std::s
       // Create reverse streaming traffic
       createTraffic->CreateRevStreamingTraffic (dumbbell, nRevStreamingFlow, offset, traffic);
       offset += nRevStreamingFlow;
-      nFlow = nRevStreamingFlow ;
+      nFlow = nRevStreamingFlow;
     }
 
-    
+
 
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
-  
+
   // Push the stats of left most router to a file
   Ptr<Node> left = dumbbell.GetLeft ();
- /* Ptr<EvalStats> evalStats = CreateObject<EvalStats> (m_bottleneckBandwidth, m_rttp , fileName);
-  evalStats->Install (left, traffic);
-*/
- // std::cout << traffic->GetStreamingPacketSize () << '\n';
-  Evaluator et = Evaluator("dumbbell",nFlow,m_aqm,traffic->GetTcpVarient(),traffic->GetStreamingPacketSize (),m_queue,left);
-  Simulator::Schedule (traffic->GetSimulationTime ()/*simtime*/, &DumbbellTopology::DestroyTrace, this, et);  
+  /* Ptr<EvalStats> evalStats = CreateObject<EvalStats> (m_bottleneckBandwidth, m_rttp , fileName);
+   evalStats->Install (left, traffic);
+ */
+  // std::cout << traffic->GetStreamingPacketSize () << '\n';
+  Evaluator et = Evaluator ("dumbbell",nFlow,m_aqm,traffic->GetTcpVarient (),traffic->GetStreamingPacketSize (),m_queue,left);
+  Simulator::Schedule (traffic->GetSimulationTime () /*simtime*/, &DumbbellTopology::DestroyTrace, this, et);
   Simulator::Stop (Time::FromDouble (((traffic->GetSimulationTime ()).ToDouble (Time::S) + 5), Time::S));
   Simulator::Run ();
   Simulator::Destroy ();

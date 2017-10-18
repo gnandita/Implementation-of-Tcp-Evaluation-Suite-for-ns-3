@@ -19,7 +19,7 @@
  *          Mohit P. Tahiliani <tahiliani@nitk.edu.in>
  */
 
-// This example is a part of TCL evaluation suite and 
+// This example is a part of TCL evaluation suite and
 // creates a dumbbell scenario.
 
 #include "ns3/core-module.h"
@@ -52,7 +52,7 @@ main (int argc, char *argv[])
   uint32_t      streamingPacketSize = 840;
   bool          useAqm = false;
   Time          simulationTime;
-  std::string   Aqm_Name="";
+  std::string   Aqm_Name = "";
   // Set default TCP variant
   std::string tcp_variant = "TcpNewReno";
 
@@ -77,7 +77,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("fileName", "File to store the results", fileName);
   cmd.AddValue ("Aqm_Name", "Aqm Name", Aqm_Name);
   cmd.Parse (argc, argv);
-  std::cout << "tcp_variant-> " << tcp_variant<< '\n';
+  std::cout << "tcp_variant-> " << tcp_variant << '\n';
   std::cout << "aqm_name-> " << Aqm_Name;
   // Convert time from double to seconds
   rttp = Time::FromDouble (rtt, Time::S);
@@ -101,10 +101,10 @@ main (int argc, char *argv[])
   Config::SetDefault ("ns3::TrafficParameters::SimulationTime", TimeValue (simulationTime));
 
   // Set TCP variant
-  std::string ns3_tcp_variant="ns3::"+tcp_variant;
-  std::cout<<tcp_variant<<"\n";
+  std::string ns3_tcp_variant = "ns3::" + tcp_variant;
+  std::cout << tcp_variant << "\n";
   if (ns3_tcp_variant.compare ("ns3::TcpWestwoodPlus") == 0)
-    { 
+    {
       // TcpWestwoodPlus is not an actual TypeId name; we need TcpWestwood here
       Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TcpWestwood::GetTypeId ()));
       // the default protocol type in ns3::TcpWestwood is WESTWOOD
@@ -117,8 +117,8 @@ main (int argc, char *argv[])
       Config::SetDefault ("ns3::TcpL4Protocol::SocketType", TypeIdValue (TypeId::LookupByName (ns3_tcp_variant)));
     }
   Ptr<TrafficParameters> trafficParams = CreateObject <TrafficParameters> ();
-  trafficParams->SetTcpVarient(tcp_variant);
-  trafficParams->SetAqmName(Aqm_Name);
+  trafficParams->SetTcpVarient (tcp_variant);
+  trafficParams->SetAqmName (Aqm_Name);
   Ptr<DumbbellTopology> dumbbell = CreateObject<DumbbellTopology> ();
   dumbbell->CreateDumbbellTopology (trafficParams, fileName);
 

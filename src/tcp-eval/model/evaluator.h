@@ -48,21 +48,20 @@ class Evaluator
 {
 
 public:
-
   static TypeId GetTypeId (void);
 
   Evaluator (std::string ScenarioName,
-                      uint32_t numFlows,
-                      std::string queueDisc,std::string tcp_varient,
-                      uint32_t pktSize,Ptr<QueueDisc> queue,Ptr<Node> node);
+             uint32_t numFlows,
+             std::string queueDisc,std::string tcp_varient,
+             uint32_t pktSize,Ptr<QueueDisc> queue,Ptr<Node> node);
 
   /**
    * \brief Destructor
    */
   ~Evaluator ();
 
-  
-  
+
+
   void DestroyConnection ();
 
 
@@ -71,28 +70,27 @@ public:
       m_sources[flow]->CancelEvents ();
     }
 */
-  /**
-   * \brief Restarts the paused flow
-   *
-   * \param flow The flow id
-   */
- /* void Restart (uint32_t flow)
-    {
-      m_sources[flow]->ScheduleStartEvent ();
-    }
+/**
+ * \brief Restarts the paused flow
+ *
+ * \param flow The flow id
+ */
+/* void Restart (uint32_t flow)
+   {
+     m_sources[flow]->ScheduleStartEvent ();
+   }
 */
 private:
-  
   void PacketEnqueue (Ptr<const QueueDiscItem> item);
 
-  
+
   void PacketDequeue (Ptr<const QueueDiscItem> item);
 
-  
+
   void PacketDrop (Ptr<const QueueDiscItem> item);
 
-  
-  void PayloadSize (Ptr<const Packet> packet/*, const Address & address*/);
+
+  void PayloadSize (Ptr<const Packet> packet /*, const Address & address*/);
 
   std::string m_currentAQM;                       //!< AQM being currently simulated
   uint32_t m_numFlows;                            //!< The total number of flows
@@ -107,9 +105,9 @@ private:
   uint64_t m_TPrecord;                            //!< The total amount of data received in 10ms
   Time m_lastTPrecord;                            //!< Last time the average goodput was calculated
   Ptr<OutputStreamWrapper> m_TPfile;              //!< File to store goodput values
-  std::vector < Ptr < PacketSink >> m_sinks;      //!< List of packet sinks
+  std::vector < Ptr < PacketSink > > m_sinks;      //!< List of packet sinks
   Ptr<OutputStreamWrapper> m_GPfile;              //!< File to store per flow statistics
-  std::vector < Ptr < EvalApp >> m_sources;       //!< List of application sources
+  std::vector < Ptr < EvalApp > > m_sources;       //!< List of application sources
   Ptr<OutputStreamWrapper> m_metaData;            //!< File to store flow completion times
   Ptr<OutputStreamWrapper> m_dropTime;            //!< File to store packet drop times
   Ptr<OutputStreamWrapper> m_enqueueTime;         //!< File to store packet enqueue times
