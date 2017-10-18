@@ -42,6 +42,11 @@ ConfigureTopology::GetTypeId (void)
                    DoubleValue (10),
                    MakeDoubleAccessor (&ConfigureTopology::m_bottleneckBandwidth),
                    MakeDoubleChecker<double> (0))
+    .AddAttribute ("CoreLinkBandwidth",
+                   "Bottleneck link capacity in Mbps",
+                   DoubleValue (1000),
+                   MakeDoubleAccessor (&ConfigureTopology::m_coreLinkBandwidth),
+                   MakeDoubleChecker<double> (0))
     .AddAttribute ("BottleneckCount", "Number of bottleneck links",
                    UintegerValue (1),
                    MakeUintegerAccessor (&ConfigureTopology::m_nBottlenecks),
@@ -94,40 +99,42 @@ ConfigureTopology::SetTopologyParameters (Ptr<TrafficParameters> traffic, uint32
     }
 
   m_nonBottleneckBuffer = m_bottleneckBuffer;
+  m_coreLinkBuffer = m_bottleneckBuffer;
+  m_coreLinkDelay = m_bottleneckDelay;
 }
 
 void
 ConfigureTopology::SetAqmParameters (std::string AqmName)
 {
-  if(AqmName=="RedQueueDisc")
-{
-  Config::SetDefault ("ns3::RedQueueDisc::Mode", StringValue ("QUEUE_DISC_MODE_PACKETS"));
-  Config::SetDefault ("ns3::RedQueueDisc::MinTh", DoubleValue (0.6 * m_bottleneckBuffer));
-  Config::SetDefault ("ns3::RedQueueDisc::MaxTh", DoubleValue (0.8 * m_bottleneckBuffer));
-  Config::SetDefault ("ns3::RedQueueDisc::QW", DoubleValue (0.001));
-  Config::SetDefault ("ns3::RedQueueDisc::LInterm", DoubleValue (10));
-  Config::SetDefault ("ns3::RedQueueDisc::Gentle", BooleanValue (true));
-  Config::SetDefault ("ns3::RedQueueDisc::QueueLimit", UintegerValue (m_bottleneckBuffer));
-}
-else if(AqmName=="PieQueueDisc")  //see the paper
-{
-Config::SetDefault ("ns3::PieQueueDisc::Mode", StringValue ("QUEUE_DISC_MODE_PACKETS"));
-  Config::SetDefault ("ns3::PieQueueDisc::MeanPktSize", UintegerValue (1000));  
-  Config::SetDefault ("ns3::PieQueueDisc::DequeueThreshold", UintegerValue (10000));
-  Config::SetDefault ("ns3::PieQueueDisc::QueueDelayReference", TimeValue (Seconds (0.02)));
-  Config::SetDefault ("ns3::PieQueueDisc::MaxBurstAllowance", TimeValue (Seconds (0.1)));
-  Config::SetDefault ("ns3::PieQueueDisc::QueueLimit", UintegerValue (m_bottleneckBuffer));
-}
-else if(AqmName=="CoDelQueueDisc")
-{
-  Config::SetDefault ("ns3::CoDelQueueDisc::MaxPackets", UintegerValue (1000));
-  Config::SetDefault ("ns3::CoDelQueueDisc::Mode", StringValue ("QUEUE_DISC_MODE_PACKETS"));
-}
-else if(AqmName=="FqCoDelQueueDisc") // what other parameter to set
-{
-  Config::SetDefault ("ns3::CoDelQueueDisc::Mode", StringValue ("QUEUE_DISC_MODE_PACKETS"));
-  Config::SetDefault ("ns3::CoDelQueueDisc::MaxPackets", UintegerValue (1000));
-}
+  if (AqmName == "RedQueueDisc")
+    {
+      Config::SetDefault ("ns3::RedQueueDisc::Mode", StringValue ("QUEUE_DISC_MODE_PACKETS"));
+      Config::SetDefault ("ns3::RedQueueDisc::MinTh", DoubleValue (0.6 * m_bottleneckBuffer));
+      Config::SetDefault ("ns3::RedQueueDisc::MaxTh", DoubleValue (0.8 * m_bottleneckBuffer));
+      Config::SetDefault ("ns3::RedQueueDisc::QW", DoubleValue (0.001));
+      Config::SetDefault ("ns3::RedQueueDisc::LInterm", DoubleValue (10));
+      Config::SetDefault ("ns3::RedQueueDisc::Gentle", BooleanValue (true));
+      Config::SetDefault ("ns3::RedQueueDisc::QueueLimit", UintegerValue (m_bottleneckBuffer));
+    }
+  else if (AqmName == "PieQueueDisc") //see the paper
+    {
+      Config::SetDefault ("ns3::PieQueueDisc::Mode", StringValue ("QUEUE_DISC_MODE_PACKETS"));
+      Config::SetDefault ("ns3::PieQueueDisc::MeanPktSize", UintegerValue (1000));
+      Config::SetDefault ("ns3::PieQueueDisc::DequeueThreshold", UintegerValue (10000));
+      Config::SetDefault ("ns3::PieQueueDisc::QueueDelayReference", TimeValue (Seconds (0.02)));
+      Config::SetDefault ("ns3::PieQueueDisc::MaxBurstAllowance", TimeValue (Seconds (0.1)));
+      Config::SetDefault ("ns3::PieQueueDisc::QueueLimit", UintegerValue (m_bottleneckBuffer));
+    }
+  else if (AqmName == "CoDelQueueDisc")
+    {
+      Config::SetDefault ("ns3::CoDelQueueDisc::MaxPackets", UintegerValue (1000));
+      Config::SetDefault ("ns3::CoDelQueueDisc::Mode", StringValue ("QUEUE_DISC_MODE_PACKETS"));
+    }
+  else if (AqmName == "FqCoDelQueueDisc") // what other parameter to set
+    {
+      Config::SetDefault ("ns3::CoDelQueueDisc::Mode", StringValue ("QUEUE_DISC_MODE_PACKETS"));
+      Config::SetDefault ("ns3::CoDelQueueDisc::MaxPackets", UintegerValue (1000));
+    }
 }
 void
 ConfigureTopology::SetBottleneckBandwidth (double bottleneckBandwidth)
@@ -212,5 +219,24 @@ ConfigureTopology::GetNonBottleneckBuffer (void) const
 {
   return m_nonBottleneckBuffer;
 }
+
+Time
+ConfigureTopology::GetCoreLinkDelay (void) const
+{
+  return m_coreLinkDelay;
+}
+
+double
+ConfigureTopology::GetCoreLinkBandwidth (void) const
+{
+  return m_coreLinkBandwidth;
+}
+
+uint32_t
+ConfigureTopology::GetCoreLinkBuffer (void) const
+{
+  return m_coreLinkBuffer;
+}
+
 
 }

@@ -35,6 +35,7 @@
 #include "ns3/point-to-point-layout-module.h"
 #include "ns3/random-variable-stream.h"
 #include "point-to-point-parking-lot.h"
+#include "point-to-point-simple-network.h"
 namespace ns3 {
 
 /**
@@ -192,6 +193,62 @@ public:
    *                information of traffic related parameters.
    */
   void CreateRevStreamingTrafficParking (PointToPointParkingLotHelper parkingLot, uint32_t flows, uint32_t offset, Ptr<TrafficParameters> traffic);
+
+  void CreateFwdFtpTrafficSimpleNetwork (PointToPointSimpleNetworkHelper simpleNetwork, uint32_t flows, uint32_t offset, Ptr<TrafficParameters> traffic);
+
+  /**
+   * \brief Create reverse FTP traffic for simple-network topology
+   *
+   * \param parkingLot Object of simple-network topology
+   * \param flows Number of reverse FTP flows
+   * \param offset Index of a chain of nodes that generate reverse FTP traffic
+   * \param traffic Object of TrafficParameters class that contains the
+   *                information of traffic related parameters.
+   */
+  void CreateRevFtpTrafficSimpleNetwork (PointToPointSimpleNetworkHelper simpleNetwork, uint32_t flows, uint32_t offset, Ptr<TrafficParameters> traffic);
+
+  /**
+   * \brief Create cross FTP traffic for simple-network topology
+   *
+   * \param parkingLot Object of simple-network topology
+   * \param crossFlows Number of cross FTP flows
+   * \param traffic Object of TrafficParameters class that contains the
+   *                information of traffic related parameters.
+   */
+  void CreateCrossFtpTrafficSimpleNetwork (PointToPointSimpleNetworkHelper simpleNetwork, uint32_t crossFlows, Ptr<TrafficParameters> traffic);
+
+  /**\brief Create two-way voice traffic for simple-network topology
+   *
+   * \param parkingLot Object of simple-network topology
+   * \param flows Number of two-way voice traffic flows
+   * \param offset Index of a chain of nodes that generate two-way voice traffic
+   * \param traffic Object of TrafficParameters class that contains the
+   *                information of traffic related parameters.
+   *
+   */
+  void CreateVoiceTrafficSimpleNetwork (PointToPointSimpleNetworkHelper parkingLot, uint32_t flows, uint32_t offset, Ptr<TrafficParameters> traffic);
+
+  /**
+   * \brief Create forward streaming traffic for simple-network topology
+   *
+   * \param parkingLot Object of simple-network topology
+   * \param flows Number of forward streaming flows
+   * \param offset Index of a chain of nodes that generate forward streaming traffic
+   * \param traffic Object of TrafficParameters class that contains the
+   *                information of traffic related parameters.
+   */
+  void CreateFwdStreamingTrafficSimpleNetwork (PointToPointSimpleNetworkHelper simpleNetwork, uint32_t flows, uint32_t offset, Ptr<TrafficParameters> traffic);
+
+  /**
+   * \brief Create reverse streaming traffic for simple-network topology
+   *
+   * \param parkingLot Object of simple-network topology
+   * \param flows Number of reverse streaming flows
+   * \param offset Index of a chain of nodes that generate reverse streaming traffic
+   * \param traffic Object of TrafficParameters class that contains the
+   *                information of traffic related parameters.
+   */
+  void CreateRevStreamingTrafficSimpleNetwork (PointToPointSimpleNetworkHelper simpleNetwork, uint32_t flows, uint32_t offset, Ptr<TrafficParameters> traffic);
 
   /**
    * \brief Converts a value to string.

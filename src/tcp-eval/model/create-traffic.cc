@@ -32,7 +32,7 @@
 #include "ns3/point-to-point-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/point-to-point-layout-module.h"
-
+#include "point-to-point-simple-network.h"
 namespace ns3 {
 
 NS_LOG_COMPONENT_DEFINE ("CreateTraffic");
@@ -433,6 +433,202 @@ CreateTraffic::CreateCrossFtpTrafficParking (PointToPointParkingLotHelper parkin
           sourceAndSinkApp.Start (Seconds (GetRandomValue ()));
           sourceAndSinkApp.Stop (traffic->GetSimulationTime ());
         }
+    }
+}
+
+void
+CreateTraffic::CreateFwdFtpTrafficSimpleNetwork (PointToPointSimpleNetworkHelper simpleNetwork, uint32_t flows,
+                                                 uint32_t offset, Ptr<TrafficParameters> traffic)
+{
+  uint32_t port1 = 50000;
+
+  // offset is used to identify the starting node among left leaf nodes
+  // that generate forward FTP flows. Iterate through the leaf nodes from
+  // offset till numberOfFwdFtpFlow nodes are traversed.
+  for (uint32_t i = offset; i < flows + offset; ++i)
+    {
+      // Install bulk send application on left side nodes.
+      // i'th left node acts as a source and i'th right node acts as a sink.
+      AddressValue remoteAddress (InetSocketAddress (simpleNetwork.GetRightIpv4Address (i), port1));
+
+      BulkSendHelper ftp ("ns3::TcpSocketFactory", Address ());
+      ftp.SetAttribute ("Remote", remoteAddress);
+      ftp.SetAttribute ("MaxBytes", UintegerValue (0));
+
+      // Both source and sink apps are added to a single ApplicationContainer.
+      // This is done to avoid the case when source starts before sink or
+      // vice-versa due to random time generation.
+      ApplicationContainer sourceAndSinkApp;
+      sourceAndSinkApp.Add (ftp.Install (simpleNetwork.GetLeft (i)));
+
+      PacketSinkHelper sinkHelper ("ns3::TcpSocketFactory", InetSocketAddress (simpleNetwork.GetRightIpv4Address (i), port1));
+
+      sinkHelper.SetAttribute ("Protocol", TypeIdValue (TcpSocketFactory::GetTypeId ()));
+      sourceAndSinkApp.Add (sinkHelper.Install (simpleNetwork.GetRight (i)));
+
+      sourceAndSinkApp.Start (Seconds (GetRandomValue ()));
+      sourceAndSinkApp.Stop (traffic->GetSimulationTime ());
+    }
+}
+
+void
+CreateTraffic::CreateRevFtpTrafficSimpleNetwork (PointToPointSimpleNetworkHelper simpleNetwork, uint32_t flows,
+                                                 uint32_t offset, Ptr<TrafficParameters> traffic)
+{
+  uint32_t port1 = 50001;
+
+  // offset is used to identify the starting node among right leaf nodes
+  // that generate reverse FTP flows. Iterate through the leaf nodes from
+  // offset till numberOfRevFtpFlow nodes are traversed.
+  for (uint32_t i = offset; i < flows + offset; ++i)
+    {
+      AddressValue remoteAddress (InetSocketAddress (simpleNetwork.GetLeftIpv4Address (i), port1));
+
+      // Install bulk send application on right side nodes.
+      // i'th right node acts as a source and i'th left node acts as a sink.
+      BulkSendHelper ftp ("ns3::TcpSocketFactory", Address ());
+      ftp.SetAttribute ("Remote", remoteAddress);
+      ftp.SetAttribute ("MaxBytes", UintegerValue (0));
+
+      // Both source and sink apps are added to a single ApplicationContainer.
+      // This is done to avoid the case when source starts before sink or
+      // vice-versa due to random time generation.
+      ApplicationContainer sourceAndSinkApp;
+      sourceAndSinkApp.Add (ftp.Install (simpleNetwork.GetRight (i)));
+
+      PacketSinkHelper sinkHelper ("ns3::TcpSocketFactory", InetSocketAddress (simpleNetwork.GetLeftIpv4Address (i), port1));
+
+      sinkHelper.SetAttribute ("Protocol", TypeIdValue (TcpSocketFactory::GetTypeId ()));
+      sourceAndSinkApp.Add (sinkHelper.Install (simpleNetwork.GetLeft (i)));
+
+      sourceAndSinkApp.Start (Seconds (GetRandomValue ()));
+      sourceAndSinkApp.Stop (traffic->GetSimulationTime ());
+    }
+}
+
+void
+CreateTraffic::CreateVoiceTrafficSimpleNetwork (PointToPointSimpleNetworkHelper simpleNetwork, uint32_t flows,
+                                                uint32_t offset, Ptr<TrafficParameters> traffic)
+{
+  uint32_t port1 = 50002;
+  uint32_t port2 = 50003;
+
+  // offset is used to identify the starting node among the leaf nodes
+  // that generate two-way voice traffic. Iterate through the leaf nodes from
+  // offset till numberOfVoiceFlow nodes are traversed.
+  for (uint32_t i = offset; i < flows + offset; ++i)
+    {
+      OnOffHelper voiceFwd ("ns3::UdpSocketFactory",InetSocketAddress (simpleNetwork.GetRightIpv4Address (i), port1));
+      voiceFwd.SetAttribute ("PacketSize",UintegerValue (172));
+      voiceFwd.SetAttribute ("DataRate", DataRateValue (DataRate ("64kb/s")));
+      voiceFwd.SetAttribute ("OffTime",StringValue ("ns3::ConstantRandomVariable[Constant=1.35]"));
+
+      ApplicationContainer sourceAndSinkAppFwd;
+      sourceAndSinkAppFwd.Add (voiceFwd.Install (simpleNetwork.GetLeft (i)));
+
+      PacketSinkHelper packetSinkFwd ("ns3::UdpSocketFactory",InetSocketAddress (simpleNetwork.GetRightIpv4Address (i), port1));
+      sourceAndSinkAppFwd.Add (packetSinkFwd.Install (simpleNetwork.GetRight (i)));
+
+      sourceAndSinkAppFwd.Start (Seconds (GetRandomValue ()));
+      sourceAndSinkAppFwd.Stop (traffic->GetSimulationTime ());
+
+      OnOffHelper voiceRev ("ns3::UdpSocketFactory",InetSocketAddress (simpleNetwork.GetLeftIpv4Address (i), port2));
+      voiceRev.SetAttribute ("PacketSize",UintegerValue (172));
+      voiceRev.SetAttribute ("DataRate", DataRateValue (DataRate ("64kb/s")));
+      voiceRev.SetAttribute ("OffTime",StringValue ("ns3::ConstantRandomVariable[Constant=1.35]"));
+      ApplicationContainer sourceAndSinkAppRev;
+      sourceAndSinkAppRev.Add (voiceRev.Install (simpleNetwork.GetRight (i)));
+
+      PacketSinkHelper packetSinkRev ("ns3::UdpSocketFactory",InetSocketAddress (simpleNetwork.GetLeftIpv4Address (i), port2));
+      sourceAndSinkAppRev.Add (packetSinkRev.Install (simpleNetwork.GetLeft (i)));
+
+      sourceAndSinkAppRev.Start (Seconds (GetRandomValue ()));
+      sourceAndSinkAppRev.Stop (traffic->GetSimulationTime ());
+    }
+}
+
+void
+CreateTraffic::CreateFwdStreamingTrafficSimpleNetwork (PointToPointSimpleNetworkHelper simpleNetwork, uint32_t flows,
+                                                       uint32_t offset, Ptr<TrafficParameters> traffic)
+{
+  uint32_t port1 = 50004;
+
+  // offset is used to identify the starting node among left leaf nodes
+  // that generate forward streaming flows. Iterate through the leaf nodes from
+  // offset till numberOfFwdStreamingFlow nodes are traversed.
+  for (uint32_t i = offset; i < flows + offset; ++i)
+    {
+      std::string streamingDataRate = to_string<double> (traffic->GetStreamingRate ()) + std::string ("Kbps");
+      OnOffHelper streaming ("ns3::UdpSocketFactory",InetSocketAddress (simpleNetwork.GetRightIpv4Address (i), port1));
+      streaming.SetAttribute ("OnTime",StringValue ("ns3::ConstantRandomVariable[Constant=10]"));
+      streaming.SetAttribute ("OffTime",StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
+      streaming.SetAttribute ("PacketSize",UintegerValue (traffic->GetStreamingPacketSize ()));
+      streaming.SetAttribute ("DataRate", DataRateValue (DataRate (streamingDataRate)));
+
+      ApplicationContainer sourceAndSinkApp;
+      sourceAndSinkApp.Add (streaming.Install (simpleNetwork.GetLeft (i)));
+
+      PacketSinkHelper packetSink ("ns3::UdpSocketFactory",InetSocketAddress (simpleNetwork.GetRightIpv4Address (i), port1));
+      sourceAndSinkApp.Add (packetSink.Install (simpleNetwork.GetRight (i)));
+
+      sourceAndSinkApp.Start (Seconds (GetRandomValue ()));
+      sourceAndSinkApp.Stop (traffic->GetSimulationTime ());
+    }
+}
+
+void
+CreateTraffic::CreateRevStreamingTrafficSimpleNetwork (PointToPointSimpleNetworkHelper simpleNetwork, uint32_t flows,
+                                                       uint32_t offset, Ptr<TrafficParameters> traffic)
+{
+  uint32_t port1 = 50005;
+
+  // offset is used to identify the starting node among right leaf nodes
+  // that generate reverse streaming flows. Iterate through the leaf nodes from
+  // offset till numberOfRevStreamingFlow nodes are traversed.
+  for (uint32_t i = offset; i < flows + offset; ++i)
+    {
+      std::string streamingDataRate = to_string<double> (traffic->GetStreamingRate ()) + std::string ("Kbps");
+      OnOffHelper streaming ("ns3::UdpSocketFactory",InetSocketAddress (simpleNetwork.GetLeftIpv4Address (i), port1));
+      streaming.SetAttribute ("OnTime",StringValue ("ns3::ConstantRandomVariable[Constant=10]"));
+      streaming.SetAttribute ("OffTime",StringValue ("ns3::ConstantRandomVariable[Constant=0]"));
+      streaming.SetAttribute ("PacketSize",UintegerValue (traffic->GetStreamingPacketSize ()));
+      streaming.SetAttribute ("DataRate", DataRateValue (DataRate (streamingDataRate)));
+
+      ApplicationContainer sourceAndSinkApp;
+      sourceAndSinkApp.Add (streaming.Install (simpleNetwork.GetRight (i)));
+
+      PacketSinkHelper packetSink ("ns3::UdpSocketFactory",InetSocketAddress (simpleNetwork.GetLeftIpv4Address (i), port1));
+      sourceAndSinkApp.Add (packetSink.Install (simpleNetwork.GetLeft (i)));
+
+      sourceAndSinkApp.Start (Seconds (GetRandomValue ()));
+      sourceAndSinkApp.Stop (traffic->GetSimulationTime ());
+    }
+}
+
+void
+CreateTraffic::CreateCrossFtpTrafficSimpleNetwork (PointToPointSimpleNetworkHelper simpleNetwork, uint32_t crossFlows,
+                                                   Ptr<TrafficParameters> traffic)
+{
+  uint32_t port1 = 50006;
+
+  for (uint32_t i = 0; i < crossFlows; ++i)
+    {
+      AddressValue remoteAddress (InetSocketAddress (simpleNetwork.GetRightIpv4Address (i), port1));
+
+      BulkSendHelper ftp ("ns3::TcpSocketFactory", Address ());
+      ftp.SetAttribute ("Remote", remoteAddress);
+      ftp.SetAttribute ("MaxBytes", UintegerValue (0));
+
+      ApplicationContainer sourceAndSinkApp;
+      sourceAndSinkApp.Add (ftp.Install (simpleNetwork.GetCrossFlow (i)));
+
+      PacketSinkHelper sinkHelper ("ns3::TcpSocketFactory", InetSocketAddress (simpleNetwork.GetRightIpv4Address (i), port1));
+
+      sinkHelper.SetAttribute ("Protocol", TypeIdValue (TcpSocketFactory::GetTypeId ()));
+      sourceAndSinkApp.Add (sinkHelper.Install (simpleNetwork.GetRight (i)));
+
+      sourceAndSinkApp.Start (Seconds (GetRandomValue ()));
+      sourceAndSinkApp.Stop (traffic->GetSimulationTime ());
     }
 }
 

@@ -11,3 +11,7 @@ def build(bld):
     obj = bld.create_ns3_program('drive-parking-lot',
                                 ['core', 'internet', 'tcp-eval', 'point-to-point', 'applications', 'point-to-point-layout'])
     obj.source = 'drive-parking-lot.cc'
+    
+    obj = bld.create_ns3_program('drive-simple-network',
+                                ['core', 'internet', 'tcp-eval', 'point-to-point', 'applications', 'point-to-point-layout'])
+    obj.source = 'drive-simple-network.cc'

@@ -171,6 +171,22 @@ public:
    */
   uint32_t GetNonBottleneckBuffer (void) const;
 
+  Time GetCoreLinkDelay (void) const;
+
+  /**
+   * \brief Get the bandwidth of non-bottleneck link
+   *
+   * \return the bandwidth of non-bottleneck link
+   */
+  double GetCoreLinkBandwidth (void) const;
+
+  /**
+   * \brief Get the size of buffer on non-bottleneck link
+   *
+   * \return the size of buffer on non-bottleneck link
+   */
+  uint32_t GetCoreLinkBuffer (void) const;
+
 protected:
   double   m_bottleneckBandwidth;       //!< Bandwidth of bottleneck link in Mbps
   uint32_t m_nBottlenecks;              //!< Number of bottleneck links.
@@ -183,6 +199,9 @@ protected:
   Time     m_nonBottleneckDelay;        //!< Delay of non-bottleneck link in seconds
   uint32_t m_nonBottleneckBuffer;       //!< Size of the non-bottleneck buffer
   double   m_bottleneckBufferBdp;       //!< Bandwidth-Delay Product for the bottleneck link
+  double   m_coreLinkBandwidth;         //!< Bandwidth of non-bottleneck link in Mbps
+  Time     m_coreLinkDelay;             //!< Delay of non-bottleneck link in seconds
+  uint32_t m_coreLinkBuffer;            //!< Size of the non-bottleneck buffer
 };
 }
 
