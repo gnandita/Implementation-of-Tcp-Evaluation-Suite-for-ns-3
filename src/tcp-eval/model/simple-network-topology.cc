@@ -140,7 +140,7 @@ SimpleNetworkTopology::CreateSimpleNetworkTopology (Ptr<TrafficParameters> traff
           tchBottleneck.Install (simpleNetwork.GetCoreRouter (k)->GetDevice (0));
 
         }
-      tchBottleneck.Install (simpleNetwork.GetLeftAccessRouter ()->GetDevice (0));
+   m_queue = tchBottleneck.Install (simpleNetwork.GetLeftAccessRouter ()->GetDevice (0));
       tchBottleneck.Install (simpleNetwork.GetRightAccessRouter ()->GetDevice (0));
     }
   else
