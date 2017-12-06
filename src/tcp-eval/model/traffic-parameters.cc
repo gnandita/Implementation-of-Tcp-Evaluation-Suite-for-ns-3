@@ -104,7 +104,8 @@ TrafficParameters::SetTcpVarient (std::string tcp)
   m_tcpVarient = tcp;
 }
 
-std::string TrafficParameters::GetTcpVarient(){
+std::string TrafficParameters::GetTcpVarient ()
+{
   return m_tcpVarient;
 }
 
@@ -114,7 +115,8 @@ TrafficParameters::SetAqmName (std::string aqmName)
   m_aqm = aqmName;
 }
 
-std::string TrafficParameters::GetAqmName(){
+std::string TrafficParameters::GetAqmName ()
+{
   return m_aqm;
 }
 

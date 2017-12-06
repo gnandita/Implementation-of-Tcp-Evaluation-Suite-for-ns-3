@@ -81,16 +81,15 @@ public:
    }
 */
 private:
-  void PacketEnqueue (Ptr<const QueueDiscItem> item);
+  static void PacketEnqueue (std::string path,Ptr<const QueueDiscItem> item);
+
+  static void PacketDequeue (std::string path,Ptr<const QueueDiscItem> item);
 
 
-  void PacketDequeue (Ptr<const QueueDiscItem> item);
+  static void PacketDrop (std::string path, Ptr<const QueueDiscItem> item);
 
 
-  void PacketDrop (Ptr<const QueueDiscItem> item);
-
-
-  void PayloadSize (Ptr<const Packet> packet /*, const Address & address*/);
+  static void PayloadSize (std::string path, Ptr<const Packet> packet /*, const Address & address*/);
 
   std::string m_currentAQM;                       //!< AQM being currently simulated
   uint32_t m_numFlows;                            //!< The total number of flows

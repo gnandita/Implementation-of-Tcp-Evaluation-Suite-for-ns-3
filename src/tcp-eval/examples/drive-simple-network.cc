@@ -15,10 +15,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
+ * Authors: Dharmendra Kumar Mishra <dharmendra.nitk@gmail.com>
+ *          Mohit P. Tahiliani <tahiliani@nitk.edu.in>
  */
 
 // This example is a part of TCL evaluation suite and
-// creates a simple-network scenario.
+// creates a parking-lot scenario.
 
 #include "ns3/core-module.h"
 #include "ns3/configure-topology.h"
@@ -32,9 +34,9 @@ NS_LOG_COMPONENT_DEFINE ("TcpEvalSimpleNetworkExample");
 int
 main (int argc, char *argv[])
 {
-  // Set default values for topology
+// Set default values for topology
   double        bottleneckBandwidth = 10;
-  double        coreLinkBandwidth = 1000;
+  double       coreLinkBandwidth = 1000;
   double        rtt = 0.08;
   double        rttDiff = 0.0;
   Time          rttp;
@@ -106,7 +108,7 @@ main (int argc, char *argv[])
   Config::SetDefault ("ns3::TrafficParameters::StreamingPacketSize", UintegerValue (streamingPacketSize));
   Config::SetDefault ("ns3::TrafficParameters::UseAqm", BooleanValue (useAqm));
   Config::SetDefault ("ns3::TrafficParameters::SimulationTime", TimeValue (simulationTime));
-  Config::SetDefault ("ns3::SimpleNetworkTopology::CrossLinkDelay", TimeValue (crossLinkDelay));
+  Config::SetDefault ("ns3::ParkingLotTopology::CrossLinkDelay", TimeValue (crossLinkDelay));
 
   // Set TCP variant
   std::string ns3_tcp_variant = "ns3::" + tcp_variant;
@@ -128,6 +130,7 @@ main (int argc, char *argv[])
   trafficParams->SetTcpVarient (tcp_variant);
   trafficParams->SetAqmName (Aqm_Name);
   Ptr<SimpleNetworkTopology> simpleNetworkTopology = CreateObject<SimpleNetworkTopology> ();
+
   simpleNetworkTopology->CreateSimpleNetworkTopology (trafficParams, fileName);
 
   Simulator::Run ();

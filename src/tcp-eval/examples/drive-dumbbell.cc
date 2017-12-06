@@ -77,8 +77,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("fileName", "File to store the results", fileName);
   cmd.AddValue ("Aqm_Name", "Aqm Name", Aqm_Name);
   cmd.Parse (argc, argv);
-  std::cout << "tcp_variant-> " << tcp_variant << '\n';
-  std::cout << "aqm_name-> " << Aqm_Name;
+
   // Convert time from double to seconds
   rttp = Time::FromDouble (rtt, Time::S);
   rttDifference = Time::FromDouble (rttDiff, Time::S);
@@ -102,7 +101,6 @@ main (int argc, char *argv[])
 
   // Set TCP variant
   std::string ns3_tcp_variant = "ns3::" + tcp_variant;
-  std::cout << tcp_variant << "\n";
   if (ns3_tcp_variant.compare ("ns3::TcpWestwoodPlus") == 0)
     {
       // TcpWestwoodPlus is not an actual TypeId name; we need TcpWestwood here

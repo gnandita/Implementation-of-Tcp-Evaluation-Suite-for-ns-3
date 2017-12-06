@@ -186,10 +186,6 @@ DumbbellTopology::CreateDumbbellTopology (Ptr<TrafficParameters> traffic, std::s
 
   // Push the stats of left most router to a file
   Ptr<Node> left = dumbbell.GetLeft ();
-  /* Ptr<EvalStats> evalStats = CreateObject<EvalStats> (m_bottleneckBandwidth, m_rttp , fileName);
-   evalStats->Install (left, traffic);
- */
-  // std::cout << traffic->GetStreamingPacketSize () << '\n';
   Evaluator et = Evaluator ("dumbbell",nFlow,m_aqm,traffic->GetTcpVarient (),traffic->GetStreamingPacketSize (),m_queue,left);
   Simulator::Schedule (traffic->GetSimulationTime () /*simtime*/, &DumbbellTopology::DestroyTrace, this, et);
   Simulator::Stop (Time::FromDouble (((traffic->GetSimulationTime ()).ToDouble (Time::S) + 5), Time::S));

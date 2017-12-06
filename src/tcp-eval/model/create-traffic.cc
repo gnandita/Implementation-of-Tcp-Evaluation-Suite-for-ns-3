@@ -476,7 +476,6 @@ CreateTraffic::CreateRevFtpTrafficSimpleNetwork (PointToPointSimpleNetworkHelper
                                                  uint32_t offset, Ptr<TrafficParameters> traffic)
 {
   uint32_t port1 = 50001;
-
   // offset is used to identify the starting node among right leaf nodes
   // that generate reverse FTP flows. Iterate through the leaf nodes from
   // offset till numberOfRevFtpFlow nodes are traversed.

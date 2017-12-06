@@ -195,12 +195,12 @@ public:
     * \return the simulation time in seconds
     */
   Time GetSimulationTime (void) const;
-  
+
   void SetTcpVarient (std::string tcp);
-  std::string GetTcpVarient();
-  
+  std::string GetTcpVarient ();
+
   void SetAqmName (std::string tcp);
-  std::string GetAqmName();
+  std::string GetAqmName ();
 
 private:
   uint32_t    m_nFwdFtpFlows;           //!< Number of FTP flows on forward path (left -> right)

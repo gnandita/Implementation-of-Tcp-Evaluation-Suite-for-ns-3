@@ -1,25 +1,28 @@
 import sys
+import os
 
 scenario_name = sys.argv[1]
 TCP_name = sys.argv[2]
 AQM_name = sys.argv[3]
 dir_name = sys.argv[4]
-print dir_name
-read_qdelay_file = open(dir_name+"/"+scenario_name+"/dat_files/queue_delay/"+ TCP_name+"-"+AQM_name+"-qdel"+".dat", "r")
-read_throughput_file = open(dir_name+"/"+scenario_name+"/dat_files/throughput/"+ TCP_name+"-"+AQM_name+"-throughput"+".dat", "r") 
-write_file = open(dir_name+"/"+scenario_name+"/ellipse/dat_files/"+ TCP_name+"-"+AQM_name+"-result"+".dat", "w")
 
-qdelay_lines = read_qdelay_file.readlines()
+queue_delay_path=dir_name+"/"+scenario_name+"/dat_files/queue_delay"
 
-throughput_lines = read_throughput_file.readlines()
-
-last_time_interval = 0.0
-qdelay_ans = 0.0
-qdelay_count = 0
-throughput_index = 0
-throughput_val = 0
-throughput_count = 0
-for l in qdelay_lines:
+for queue_delay_filename in os.listdir(queue_delay_path):
+ 
+ filename=queue_delay_filename[:-10]
+ read_qdelay_file = open(queue_delay_path+"/"+ queue_delay_filename, "r")
+ read_throughput_file = open(dir_name+"/"+scenario_name+"/dat_files/throughput/"+ filename+"-throughput"+".dat", "r")  
+ write_file = open(dir_name+"/"+scenario_name+"/ellipse/dat_files/"+filename+"-result"+".dat", "w")
+ qdelay_lines = read_qdelay_file.readlines()
+ throughput_lines = read_throughput_file.readlines()
+ last_time_interval = 0.0
+ qdelay_ans = 0.0
+ qdelay_count = 0
+ throughput_index = 0
+ throughput_val = 0
+ throughput_count = 0
+ for l in qdelay_lines:
   s = l.split(' ')
   qdelay_time = float(s[0])
   qdelay_val = float(s[1])
@@ -50,7 +53,7 @@ for l in qdelay_lines:
     last_time_interval = curr_time_interval
 
 
-if not qdelay_count == 0: 
+ if not qdelay_count == 0: 
     qdelay_ans /=  qdelay_count
     while throughput_index<len(throughput_lines):
         throughput_val += float((throughput_lines[throughput_index].split(' '))[1])
@@ -66,6 +69,6 @@ if not qdelay_count == 0:
     qdelay_count = 0
     last_time_interval = curr_time_interval
 
-read_qdelay_file.close()
-read_throughput_file.close()
-write_file.close()
+ read_qdelay_file.close()
+ read_throughput_file.close()
+ write_file.close()

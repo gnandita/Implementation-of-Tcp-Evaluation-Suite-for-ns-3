@@ -16,26 +16,26 @@ namespace ns3 {
 NS_LOG_COMPONENT_DEFINE ("PointToPointSimpleNetworkHelper");
 
 PointToPointSimpleNetworkHelper:: PointToPointSimpleNetworkHelper (uint32_t nLeftLeaf,
-                                PointToPointHelper leftHelper,
-                                uint32_t nRightLeaf,
-                                PointToPointHelper rightHelper,
-                                PointToPointHelper leftAccessToCoreRouterHelper,
-                                PointToPointHelper rightAccessToCoreRouterHelper,
-                                PointToPointHelper coreRouterHelper,
-                                uint32_t nCrossFlows,                                
-                                PointToPointHelper coreRouterToCrossFlowHelper)
+                                                                   PointToPointHelper leftHelper,
+                                                                   uint32_t nRightLeaf,
+                                                                   PointToPointHelper rightHelper,
+                                                                   PointToPointHelper leftAccessToCoreRouterHelper,
+                                                                   PointToPointHelper rightAccessToCoreRouterHelper,
+                                                                   PointToPointHelper coreRouterHelper,
+                                                                   uint32_t nCrossFlows,
+                                                                   PointToPointHelper coreRouterToCrossFlowHelper)
 
- {
- // Create the leaf nodes
+{
+  // Create the leaf nodes
   m_leftLeaf.Create (nLeftLeaf);
   m_rightLeaf.Create (nRightLeaf);
-  m_accessRouters.Create(2);
-  m_coreRouters.Create(4);
-  m_crossFlow.Create(nCrossFlows);
-  
-  m_leftAccessToCoreRouterDevices = leftAccessToCoreRouterHelper.Install(m_accessRouters.Get(0),m_coreRouters.Get(1));
-  m_rightAccessToCoreRouterDevices = rightAccessToCoreRouterHelper.Install(m_accessRouters.Get(1),m_coreRouters.Get(3));
- 
+  m_accessRouters.Create (2);
+  m_coreRouters.Create (4);
+  m_crossFlow.Create (nCrossFlows);
+
+  m_leftAccessToCoreRouterDevices = leftAccessToCoreRouterHelper.Install (m_accessRouters.Get (0),m_coreRouters.Get (1));
+  m_rightAccessToCoreRouterDevices = rightAccessToCoreRouterHelper.Install (m_accessRouters.Get (1),m_coreRouters.Get (3));
+
   // Add the left side links
   for (uint32_t i = 0; i < nLeftLeaf; ++i)
     {
@@ -57,20 +57,20 @@ PointToPointSimpleNetworkHelper:: PointToPointSimpleNetworkHelper (uint32_t nLef
   for (uint32_t i = 0; i < nCrossFlows; ++i)
     {
       NetDeviceContainer c = coreRouterToCrossFlowHelper.Install (m_coreRouters.Get (2),
-                                                  m_crossFlow.Get (i));
+                                                                  m_crossFlow.Get (i));
       m_coreRouterToCrossFlowDevices.Add (c.Get (0));
       m_crossFlowDevices.Add (c.Get (1));
-    }  
-  
+    }
+
   for (uint32_t i = 0; i < 4; ++i)
     {
       NetDeviceContainer c = coreRouterHelper.Install (m_coreRouters.Get (i),
-                                                  m_coreRouters.Get ((i+1)%4));     
+                                                       m_coreRouters.Get ((i + 1) % 4));
       m_coreRouterDevices.push_back (c);
     }
 }
 
-PointToPointSimpleNetworkHelper:: ~PointToPointSimpleNetworkHelper()
+PointToPointSimpleNetworkHelper:: ~PointToPointSimpleNetworkHelper ()
 {
 }
 void
@@ -79,18 +79,18 @@ PointToPointSimpleNetworkHelper::InstallStack (InternetStackHelper stack)
   stack.Install (m_leftLeaf);
   stack.Install (m_rightLeaf);
   stack.Install (m_accessRouters);
-  stack.Install (m_coreRouters);   
+  stack.Install (m_coreRouters);
   stack.Install (m_crossFlow);
 }
 
 
 void
 PointToPointSimpleNetworkHelper::AssignIpv4Addresses (Ipv4AddressHelper leftIp,
-                                                   Ipv4AddressHelper rightIp,
-                                                   Ipv4AddressHelper leftAccesstoCoreIp,
-                                                   Ipv4AddressHelper rightAccesstoCoreIp,
-						   Ipv4AddressHelper coreRouterIp,
-                                                   Ipv4AddressHelper crossFlowIp)
+                                                      Ipv4AddressHelper rightIp,
+                                                      Ipv4AddressHelper leftAccesstoCoreIp,
+                                                      Ipv4AddressHelper rightAccesstoCoreIp,
+                                                      Ipv4AddressHelper coreRouterIp,
+                                                      Ipv4AddressHelper crossFlowIp)
 {
   // Assign to left side
   for (uint32_t i = 0; i < LeftCount (); ++i)
@@ -115,12 +115,12 @@ PointToPointSimpleNetworkHelper::AssignIpv4Addresses (Ipv4AddressHelper leftIp,
       m_rightRouterInterfaces.Add (ifc.Get (1));
       rightIp.NewNetwork ();
     }
-  
-  m_leftAccessToCoreRouterInterfaces = leftAccesstoCoreIp.Assign(m_leftAccessToCoreRouterDevices);
-  m_rightAccessToCoreRouterInterfaces = rightAccesstoCoreIp.Assign(m_rightAccessToCoreRouterDevices);
- 
+
+  m_leftAccessToCoreRouterInterfaces = leftAccesstoCoreIp.Assign (m_leftAccessToCoreRouterDevices);
+  m_rightAccessToCoreRouterInterfaces = rightAccesstoCoreIp.Assign (m_rightAccessToCoreRouterDevices);
+
   // Assign to router network
-   for (uint32_t i = 0; i < CrossFlowsCount (); ++i)
+  for (uint32_t i = 0; i < CrossFlowsCount (); ++i)
     {
       NetDeviceContainer ndc;
       ndc.Add (m_coreRouterToCrossFlowDevices.Get (i));
@@ -133,9 +133,9 @@ PointToPointSimpleNetworkHelper::AssignIpv4Addresses (Ipv4AddressHelper leftIp,
 
   for (uint32_t i = 0; i < 4; ++i)
     {
-       Ipv4InterfaceContainer ifc = coreRouterIp.Assign(m_coreRouterDevices[i]);
-       m_coreRouterInterfaces.push_back (ifc);
-       coreRouterIp.NewNetwork ();
+      Ipv4InterfaceContainer ifc = coreRouterIp.Assign (m_coreRouterDevices[i]);
+      m_coreRouterInterfaces.push_back (ifc);
+      coreRouterIp.NewNetwork ();
     }
 }
 
@@ -181,7 +181,7 @@ Ipv4Address PointToPointSimpleNetworkHelper::GetRightIpv4Address (uint32_t i) co
 
 Ipv4Address PointToPointSimpleNetworkHelper::GetCrossFlowIpv4Address (uint32_t i) const
 {
-  return  m_crossFlowInterfaces.GetAddress (i);
+  return m_crossFlowInterfaces.GetAddress (i);
 }
 
 uint32_t  PointToPointSimpleNetworkHelper::LeftCount () const
@@ -226,7 +226,14 @@ Ipv4Address PointToPointSimpleNetworkHelper::GetCoreRouterToRightAccessRouterIpv
 
 Ipv4Address PointToPointSimpleNetworkHelper::GetCoreRouterToCoreRouterIpv4Address (uint32_t i,uint32_t j) const
 {
- if(i<j) { return m_coreRouterInterfaces[i].GetAddress(0); } else {return m_coreRouterInterfaces[j].GetAddress(1); }
+  if (i < j)
+    {
+      return m_coreRouterInterfaces[i].GetAddress (0);
+    }
+  else
+    {
+      return m_coreRouterInterfaces[j].GetAddress (1);
+    }
 }
 
 }

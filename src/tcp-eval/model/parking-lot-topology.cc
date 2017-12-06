@@ -102,16 +102,9 @@ ParkingLotTopology::CreateParkingLotTopology (Ptr<TrafficParameters> trafficPara
 
   pointToPointLeaf.SetDeviceAttribute  ("DataRate", StringValue (to_string<double> (m_nonBottleneckBandwidth) + std::string ("Mbps")));
   pointToPointLeaf.SetChannelAttribute ("Delay", StringValue (to_string<double> (m_nonBottleneckDelay.ToDouble (Time::S)) + std::string ("s")));
-  /* pointToPointLeaf.SetQueue ("ns3::DropTailQueue",
-                              "Mode", StringValue ("QUEUE_MODE_PACKETS"),
-                              "MaxPackets", UintegerValue (m_nonBottleneckBuffer));
- */
+
   pointToPointCrossLinks.SetDeviceAttribute  ("DataRate", StringValue (to_string<double> (m_nonBottleneckBandwidth) + std::string ("Mbps")));
   pointToPointCrossLinks.SetChannelAttribute ("Delay", StringValue (to_string<double> (m_crossLinkDelay.ToDouble (Time::S)) + std::string ("s")));
-  /*pointToPointCrossLinks.SetQueue ("ns3::DropTailQueue",
-                                   "Mode", StringValue ("QUEUE_MODE_PACKETS"),
-                                   "MaxPackets", UintegerValue (m_nonBottleneckBuffer));
-*/
 
   uint32_t nFlow;
   uint32_t nFwdFtpFlow = trafficParams->GetNumOfFwdFtpFlows ();
@@ -139,31 +132,16 @@ ParkingLotTopology::CreateParkingLotTopology (Ptr<TrafficParameters> trafficPara
   // else install DropTail queue
   if (trafficParams->IsAqmUsed () == true)
     {
-      std::cout << "inside true...traffic->GetAqmName()" << trafficParams->GetAqmName ();
       SetAqmParameters (trafficParams->GetAqmName ());
       m_aqm = "ns3::" + trafficParams->GetAqmName ();
       tchBottleneck.SetRootQueueDisc (m_aqm);
-      std::cout << "err";
       for (uint32_t k = 0; k < parkingLot.RouterCount (); k++)
         {
           tchBottleneck.Install (parkingLot.GetRouter (k)->GetDevice (0));
-
         }
-      /* pointToPointRouter.SetQueue ("ns3::RedQueue",
-                                    "LinkBandwidth", DataRateValue (DataRate (to_string<double> (m_bottleneckBandwidth) + std::string ("Mbps"))),
-                                    "LinkDelay", TimeValue (m_bottleneckDelay),
-                                    "QueueLimit", UintegerValue (m_bottleneckBuffer));
-     */
-
-      //tchBottleneck.Install (parkingLot.GetRight ()->GetDevice (0));
-
     }
   else
     {
-      /* pointToPointRouter.SetQueue ("ns3::DropTailQueue",
-                                    "Mode", StringValue ("QUEUE_MODE_PACKETS"),
-                                    "MaxPackets", UintegerValue (m_bottleneckBuffer));
-     */
       m_aqm = "ns3::PfifoFastQueueDisc";
       tchBottleneck.SetRootQueueDisc ("ns3::PfifoFastQueueDisc", "Limit", UintegerValue (m_nonBottleneckBuffer));
       for (uint32_t k = 0; k < parkingLot.RouterCount (); k++)
@@ -171,10 +149,6 @@ ParkingLotTopology::CreateParkingLotTopology (Ptr<TrafficParameters> trafficPara
           tchBottleneck.Install (parkingLot.GetRouter (k)->GetDevice (0));
 
         }
-
-      //tchBottleneck.Install (dumbbell.GetRight ()->GetDevice (0));
-
-
     }
   tchBottleneck.Uninstall (parkingLot.GetRouter (0)->GetDevice (0));
   m_queue = tchBottleneck.Install (parkingLot.GetRouter (0)->GetDevice (0)).Get (0);
@@ -239,9 +213,7 @@ ParkingLotTopology::CreateParkingLotTopology (Ptr<TrafficParameters> trafficPara
 
   // Push the stats of left most router to a file
   Ptr<Node> left = parkingLot.GetRouter (0);
-  /* Ptr<EvalStats> evalStats = CreateObject<EvalStats> (m_bottleneckBandwidth, m_rttp , fileName);
-   evalStats->Install (left, trafficParams);
- */
+
   Evaluator et = Evaluator ("parking-lot",nFlow,m_aqm,trafficParams->GetTcpVarient (),trafficParams->GetStreamingPacketSize (),m_queue,left);
   Simulator::Schedule (trafficParams->GetSimulationTime () /*simtime*/, &ParkingLotTopology::DestroyTrace, this, et);
   Simulator::Stop (Time::FromDouble (((trafficParams->GetSimulationTime ()).ToDouble (Time::S) + 5), Time::S));

@@ -107,7 +107,7 @@ SimpleNetworkTopology::CreateSimpleNetworkTopology (Ptr<TrafficParameters> traff
   pointToPointCoreRouter.SetDeviceAttribute  ("DataRate", StringValue (to_string<double> (m_coreLinkBandwidth) + std::string ("Mbps")));
   pointToPointCoreRouter.SetChannelAttribute ("Delay", StringValue (to_string<double> (m_coreLinkDelay.ToDouble (Time::S)) + std::string ("s")));
 
-  uint32_t nFlow;
+  uint32_t nFlow = 0;
   uint32_t nFwdFtpFlow = trafficParams->GetNumOfFwdFtpFlows ();
   uint32_t nRevFtpFlow = trafficParams->GetNumOfRevFtpFlows ();
   uint32_t nVoiceFlow = trafficParams->GetNumOfVoiceFlows ();
@@ -134,28 +134,23 @@ SimpleNetworkTopology::CreateSimpleNetworkTopology (Ptr<TrafficParameters> traff
       SetAqmParameters (trafficParams->GetAqmName ());
       m_aqm = "ns3::" + trafficParams->GetAqmName ();
       tchBottleneck.SetRootQueueDisc (m_aqm);
-      std::cout << "err";
       for (uint32_t k = 0; k < 4; k++)
         {
           tchBottleneck.Install (simpleNetwork.GetCoreRouter (k)->GetDevice (0));
-
         }
-   m_queue = tchBottleneck.Install (simpleNetwork.GetLeftAccessRouter ()->GetDevice (0));
+      m_queue =  tchBottleneck.Install (simpleNetwork.GetLeftAccessRouter ()->GetDevice (0)).Get (0);
       tchBottleneck.Install (simpleNetwork.GetRightAccessRouter ()->GetDevice (0));
     }
   else
     {
       m_aqm = "ns3::PfifoFastQueueDisc";
       tchBottleneck.SetRootQueueDisc ("ns3::PfifoFastQueueDisc", "Limit", UintegerValue (m_nonBottleneckBuffer));
-      for (uint32_t k = 0; k < 4; k++)
-        {
-          tchBottleneck.Install (simpleNetwork.GetCoreRouter (k)->GetDevice (0));
-        }
-      tchBottleneck.Install (simpleNetwork.GetLeftAccessRouter ()->GetDevice (0));
+      m_queue = tchBottleneck.Install (simpleNetwork.GetLeftAccessRouter ()->GetDevice (0)).Get (0);
+      tchBottleneck.Install (simpleNetwork.GetCoreRouter (1)->GetDevice (0));
       tchBottleneck.Install (simpleNetwork.GetRightAccessRouter ()->GetDevice (0));
+      tchBottleneck.Install (simpleNetwork.GetCoreRouter (3)->GetDevice (0));
     }
-  tchBottleneck.Uninstall (simpleNetwork.GetLeftAccessRouter ()->GetDevice (0));
-  m_queue = tchBottleneck.Install (simpleNetwork.GetLeftAccessRouter ()->GetDevice (0)).Get (0);
+
   simpleNetwork.AssignIpv4Addresses (Ipv4AddressHelper ("10.1.1.0", "255.255.255.0"),
                                      Ipv4AddressHelper ("10.10.1.0", "255.255.255.0"),
                                      Ipv4AddressHelper ("10.50.1.0", "255.255.255.0"),
@@ -169,7 +164,6 @@ SimpleNetworkTopology::CreateSimpleNetworkTopology (Ptr<TrafficParameters> traff
   Ptr<CreateTraffic> createTraffic = CreateObject<CreateTraffic> ();
   if (nFwdFtpFlow > 0)
     {
-      // Create forward FTP traffic
       createTraffic->CreateFwdFtpTrafficSimpleNetwork (simpleNetwork, nFwdFtpFlow, offset, trafficParams);
       offset += nFwdFtpFlow;
       nFlow = nFwdFtpFlow;
@@ -177,7 +171,6 @@ SimpleNetworkTopology::CreateSimpleNetworkTopology (Ptr<TrafficParameters> traff
 
   if (nRevFtpFlow > 0)
     {
-      // Create reverse FTP traffic
       createTraffic->CreateRevFtpTrafficSimpleNetwork (simpleNetwork, nRevFtpFlow, offset, trafficParams);
       offset += nRevFtpFlow;
       nFlow = nRevFtpFlow;
@@ -185,13 +178,11 @@ SimpleNetworkTopology::CreateSimpleNetworkTopology (Ptr<TrafficParameters> traff
 
   if (trafficParams->GetNumOfCrossFtpFlows () > 0)
     {
-      // Create cross FTP traffic
       createTraffic->CreateCrossFtpTrafficSimpleNetwork (simpleNetwork, nCrossFtpFlow, trafficParams);
     }
 
   if (nVoiceFlow > 0)
     {
-      // Create voice traffic
       createTraffic->CreateVoiceTrafficSimpleNetwork (simpleNetwork, nVoiceFlow, offset, trafficParams);
       offset += nVoiceFlow;
       nFlow = nVoiceFlow;
@@ -216,7 +207,7 @@ SimpleNetworkTopology::CreateSimpleNetworkTopology (Ptr<TrafficParameters> traff
   // Push the stats of left most router to a file
   Ptr<Node> left = simpleNetwork.GetLeftAccessRouter ();
   Evaluator et = Evaluator ("simple-network",nFlow,m_aqm,trafficParams->GetTcpVarient (),trafficParams->GetStreamingPacketSize (),m_queue,left);
-  Simulator::Schedule (trafficParams->GetSimulationTime () /*simtime*/, &SimpleNetworkTopology::DestroyTrace, this, et);
+  Simulator::Schedule (trafficParams->GetSimulationTime (), &SimpleNetworkTopology::DestroyTrace, this, et);
   Simulator::Stop (Time::FromDouble (((trafficParams->GetSimulationTime ()).ToDouble (Time::S) + 5), Time::S));
   Simulator::Run ();
   Simulator::Destroy ();
