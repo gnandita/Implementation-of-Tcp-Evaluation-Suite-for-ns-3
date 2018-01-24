@@ -30,6 +30,8 @@
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-interface-container.h"
+#include "ns3/ipv6-address-helper.h"
+#include "ns3/ipv6-interface-container.h"
 
 namespace ns3 {
 
@@ -88,6 +90,7 @@ public:
                             Ipv4AddressHelper rightAccesstoCoreIp,
                             Ipv4AddressHelper coreRouterIp,
                             Ipv4AddressHelper crossFlowIp);
+  void AssignIpv6Addresses (Ipv6Address network, Ipv6Prefix prefix);
   Ptr<Node> GetLeftAccessRouter () const;
   Ptr<Node> GetLeft (uint32_t i) const;
   Ptr<Node> GetRightAccessRouter () const;
@@ -97,15 +100,27 @@ public:
   Ipv4Address GetLeftIpv4Address (uint32_t i) const;
   Ipv4Address GetRightIpv4Address (uint32_t i) const;
   Ipv4Address GetCrossFlowIpv4Address (uint32_t i) const;
+
+  Ipv6Address GetLeftIpv6Address (uint32_t i) const;
+  Ipv6Address GetRightIpv6Address (uint32_t i) const;
+  Ipv6Address GetCrossFlowIpv6Address (uint32_t i) const;
   uint32_t  LeftCount () const;
   uint32_t  RightCount () const;
   uint32_t  CrossFlowsCount () const;
+
   Ipv4Address GetRouterToCrossFlowIpv4Address (uint32_t crossFlowIndex) const;
   Ipv4Address GetLeftAccessRouterToCoreRouterIpv4Address () const;
   Ipv4Address GetRightAccessRouterToCoreRouterIpv4Address () const;
   Ipv4Address GetCoreRouterToLeftAccessRouterIpv4Address () const;
   Ipv4Address GetCoreRouterToRightAccessRouterIpv4Address () const;
   Ipv4Address GetCoreRouterToCoreRouterIpv4Address (uint32_t i,uint32_t j) const;
+
+  Ipv6Address GetRouterToCrossFlowIpv6Address (uint32_t crossFlowIndex) const;
+  Ipv6Address GetLeftAccessRouterToCoreRouterIpv6Address () const;
+  Ipv6Address GetRightAccessRouterToCoreRouterIpv6Address () const;
+  Ipv6Address GetCoreRouterToLeftAccessRouterIpv6Address () const;
+  Ipv6Address GetCoreRouterToRightAccessRouterIpv6Address () const;
+  Ipv6Address GetCoreRouterToCoreRouterIpv6Address (uint32_t i,uint32_t j) const;
 
 private:
   NodeContainer          m_leftLeaf;                                    //!< Left Leaf nodes
@@ -134,6 +149,16 @@ private:
   Ipv4InterfaceContainer m_coreRouterToCrossFlowInterfaces;
   Ipv4InterfaceContainer m_crossFlowInterfaces;
   std::vector<Ipv4InterfaceContainer> m_coreRouterInterfaces;
+
+  Ipv6InterfaceContainer m_leftLeafInterfaces6;
+  Ipv6InterfaceContainer m_leftRouterInterfaces6;
+  Ipv6InterfaceContainer m_rightLeafInterfaces6;
+  Ipv6InterfaceContainer m_rightRouterInterfaces6;
+  Ipv6InterfaceContainer m_leftAccessToCoreRouterInterfaces6;
+  Ipv6InterfaceContainer m_rightAccessToCoreRouterInterfaces6;
+  Ipv6InterfaceContainer m_coreRouterToCrossFlowInterfaces6;
+  Ipv6InterfaceContainer m_crossFlowInterfaces6;
+  std::vector<Ipv6InterfaceContainer> m_coreRouterInterfaces6;
 
 };
 }

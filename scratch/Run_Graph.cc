@@ -42,12 +42,10 @@ int main (int argc, char *argv[])
   uint32_t i = 0,expt_num, num_Tcp;
   std::string transport_prot[] = {"TcpHybla","TcpHighSpeed","TcpHtcp","TcpVegas","TcpScalable","TcpVeno","TcpBic","TcpYeah", "TcpIllinois","TcpWestwood","TcpWestwoodPlus", "TcpLedbat","TcpNewReno"};
   std::string run = "";
-// std::string gnuPlot = "";
-  num_Tcp = 1;
+  num_Tcp = 2;
 
   for (expt_num = 1; expt_num <= 1; expt_num++)
     {
-      // gnuPlot = "gnuplot -e 'set terminal png size 640,640; set output \"Result.png\"; set xrange[] reverse; plot ";
       for (i = 0; i < num_Tcp; i++)
         {
           if (useAqm == "false")
@@ -67,6 +65,8 @@ int main (int argc, char *argv[])
           system (Ellipse.c_str ());
         }
     }
-
+  std::string ProPerFlow = std::string ("python src/tcp-eval/generate-perflow.py ") + scenarioName + " " + default_directory;
+  std::string PerFlow = ProPerFlow;
+  system (PerFlow.c_str ());
   return(0);
 }

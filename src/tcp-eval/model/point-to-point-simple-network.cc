@@ -10,6 +10,7 @@
 #include "ns3/point-to-point-net-device.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/string.h"
+#include "ns3/ipv6-address-generator.h"
 
 namespace ns3 {
 
@@ -139,6 +140,84 @@ PointToPointSimpleNetworkHelper::AssignIpv4Addresses (Ipv4AddressHelper leftIp,
     }
 }
 
+void
+PointToPointSimpleNetworkHelper::AssignIpv6Addresses (Ipv6Address addrBase,
+                                                      Ipv6Prefix prefix)
+{
+  Ipv6AddressGenerator::Init (addrBase, prefix);
+  Ipv6Address v6network;
+  Ipv6AddressHelper addressHelper;
+  // Assign to left side
+  for (uint32_t i = 0; i < LeftCount (); ++i)
+    {
+      v6network = Ipv6AddressGenerator::GetNetwork (prefix);
+      addressHelper.SetBase (v6network, prefix);
+
+      NetDeviceContainer ndc;
+      ndc.Add (m_leftLeafDevices.Get (i));
+      ndc.Add (m_leftRouterDevices.Get (i));
+      Ipv6InterfaceContainer ifc = addressHelper.Assign (ndc);
+      Ipv6InterfaceContainer::Iterator it = ifc.Begin ();
+      m_leftLeafInterfaces6.Add ((*it).first, (*it).second);
+      it++;
+      m_leftRouterInterfaces6.Add ((*it).first, (*it).second);
+      Ipv6AddressGenerator::NextNetwork (prefix);
+    }
+
+  // Assign to right side
+  for (uint32_t i = 0; i < RightCount (); ++i)
+    {
+      v6network = Ipv6AddressGenerator::GetNetwork (prefix);
+      addressHelper.SetBase (v6network, prefix);
+
+      NetDeviceContainer ndc;
+      ndc.Add (m_rightLeafDevices.Get (i));
+      ndc.Add (m_rightRouterDevices.Get (i));
+      Ipv6InterfaceContainer ifc = addressHelper.Assign (ndc);
+      Ipv6InterfaceContainer::Iterator it = ifc.Begin ();
+      m_rightLeafInterfaces6.Add ((*it).first, (*it).second);
+      it++;
+      m_rightRouterInterfaces6.Add ((*it).first, (*it).second);
+      Ipv6AddressGenerator::NextNetwork (prefix);
+    }
+
+  v6network = Ipv6AddressGenerator::GetNetwork (prefix);
+  addressHelper.SetBase (v6network, prefix);
+  m_leftAccessToCoreRouterInterfaces6 = addressHelper.Assign (m_leftAccessToCoreRouterDevices);
+  Ipv6AddressGenerator::NextNetwork (prefix);
+
+  v6network = Ipv6AddressGenerator::GetNetwork (prefix);
+  addressHelper.SetBase (v6network, prefix);
+  m_rightAccessToCoreRouterInterfaces6 = addressHelper.Assign (m_rightAccessToCoreRouterDevices);
+  Ipv6AddressGenerator::NextNetwork (prefix);
+
+// Assign to router network
+  for (uint32_t i = 0; i < CrossFlowsCount (); ++i)
+    {
+      v6network = Ipv6AddressGenerator::GetNetwork (prefix);
+      addressHelper.SetBase (v6network, prefix);
+
+      NetDeviceContainer ndc;
+      ndc.Add (m_coreRouterToCrossFlowDevices.Get (i));
+      ndc.Add (m_crossFlowDevices.Get (i));
+      Ipv6InterfaceContainer ifc = addressHelper.Assign (ndc);
+      Ipv6InterfaceContainer::Iterator it = ifc.Begin ();
+      m_coreRouterToCrossFlowInterfaces6.Add ((*it).first, (*it).second);
+      it++;
+      m_crossFlowInterfaces6.Add ((*it).first, (*it).second);
+      Ipv6AddressGenerator::NextNetwork (prefix);
+    }
+
+  for (uint32_t i = 0; i < 4; ++i)
+    {
+      v6network = Ipv6AddressGenerator::GetNetwork (prefix);
+      addressHelper.SetBase (v6network, prefix);
+      Ipv6InterfaceContainer ifc = addressHelper.Assign (m_coreRouterDevices[i]);
+      m_coreRouterInterfaces6.push_back (ifc);
+      Ipv6AddressGenerator::NextNetwork (prefix);
+    }
+}
+
 Ptr<Node> PointToPointSimpleNetworkHelper::GetLeftAccessRouter () const
 { // Get the right side bottleneck router
   return m_accessRouters.Get (0);
@@ -182,6 +261,21 @@ Ipv4Address PointToPointSimpleNetworkHelper::GetRightIpv4Address (uint32_t i) co
 Ipv4Address PointToPointSimpleNetworkHelper::GetCrossFlowIpv4Address (uint32_t i) const
 {
   return m_crossFlowInterfaces.GetAddress (i);
+}
+
+Ipv6Address PointToPointSimpleNetworkHelper::GetLeftIpv6Address (uint32_t i) const
+{
+  return m_leftLeafInterfaces6.GetAddress (i,1);
+}
+
+Ipv6Address PointToPointSimpleNetworkHelper::GetRightIpv6Address (uint32_t i) const
+{
+  return m_rightLeafInterfaces6.GetAddress (i,1);
+}
+
+Ipv6Address PointToPointSimpleNetworkHelper::GetCrossFlowIpv6Address (uint32_t i) const
+{
+  return m_crossFlowInterfaces6.GetAddress (i,1);
 }
 
 uint32_t  PointToPointSimpleNetworkHelper::LeftCount () const
@@ -233,6 +327,43 @@ Ipv4Address PointToPointSimpleNetworkHelper::GetCoreRouterToCoreRouterIpv4Addres
   else
     {
       return m_coreRouterInterfaces[j].GetAddress (1);
+    }
+}
+
+Ipv6Address PointToPointSimpleNetworkHelper::GetRouterToCrossFlowIpv6Address (uint32_t crossFlowIndex) const
+{
+  return m_coreRouterToCrossFlowInterfaces6.GetAddress (crossFlowIndex,1);
+}
+
+Ipv6Address PointToPointSimpleNetworkHelper::GetLeftAccessRouterToCoreRouterIpv6Address () const
+{
+  return m_leftAccessToCoreRouterInterfaces6.GetAddress (0,1);
+}
+
+Ipv6Address PointToPointSimpleNetworkHelper::GetRightAccessRouterToCoreRouterIpv6Address () const
+{
+  return m_rightAccessToCoreRouterInterfaces6.GetAddress (0,1);
+}
+
+Ipv6Address PointToPointSimpleNetworkHelper::GetCoreRouterToLeftAccessRouterIpv6Address () const
+{
+  return m_leftAccessToCoreRouterInterfaces6.GetAddress (1,1);
+}
+
+Ipv6Address PointToPointSimpleNetworkHelper::GetCoreRouterToRightAccessRouterIpv6Address () const
+{
+  return m_rightAccessToCoreRouterInterfaces6.GetAddress (1,1);
+}
+
+Ipv6Address PointToPointSimpleNetworkHelper::GetCoreRouterToCoreRouterIpv6Address (uint32_t i,uint32_t j) const
+{
+  if (i < j)
+    {
+      return m_coreRouterInterfaces6[i].GetAddress (0,1);
+    }
+  else
+    {
+      return m_coreRouterInterfaces6[j].GetAddress (1,1);
     }
 }
 
