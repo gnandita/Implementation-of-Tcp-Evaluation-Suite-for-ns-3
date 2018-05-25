@@ -75,6 +75,10 @@ TrafficParameters::GetTypeId (void)
                    BooleanValue (false),
                    MakeBooleanAccessor (&TrafficParameters::m_useAqm),
                    MakeBooleanChecker ())
+    .AddAttribute ("PerFlowStat", "PerFlow statistics is required or not",
+                   BooleanValue (false),
+                   MakeBooleanAccessor (&TrafficParameters::m_perFlowStat),
+                   MakeBooleanChecker ())
     .AddAttribute ("SimulationTime",
                    "Total simulation time in seconds",
                    TimeValue (Seconds (10)),
@@ -232,6 +236,18 @@ Time
 TrafficParameters::GetSimulationTime (void) const
 {
   return m_simulationTime;
+}
+
+void
+TrafficParameters::SetPerFlowStat (bool perFlowStat)
+{
+  m_perFlowStat = perFlowStat;
+}
+
+bool
+TrafficParameters::IsPerFlowStatRequired (void) const
+{
+  return m_perFlowStat;
 }
 
 }

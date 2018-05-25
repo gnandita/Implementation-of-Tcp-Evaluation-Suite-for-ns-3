@@ -53,6 +53,7 @@ main (int argc, char *argv[])
   bool          useAqm = false;
   Time          simulationTime;
   std::string   Aqm_Name = "";
+  bool   perFlowStat = false;
   // Set default TCP variant
   std::string tcp_variant = "TcpNewReno";
 
@@ -76,6 +77,7 @@ main (int argc, char *argv[])
   cmd.AddValue ("tcp_variant", "Change the TCP variant", tcp_variant);
   cmd.AddValue ("fileName", "File to store the results", fileName);
   cmd.AddValue ("Aqm_Name", "Aqm Name", Aqm_Name);
+  cmd.AddValue ("PerFlowStat", "Tells if perflow statistics is needed or not", perFlowStat);
   cmd.Parse (argc, argv);
 
   // Convert time from double to seconds
@@ -97,6 +99,7 @@ main (int argc, char *argv[])
   Config::SetDefault ("ns3::TrafficParameters::StreamingRate", DoubleValue (streamingRate));
   Config::SetDefault ("ns3::TrafficParameters::StreamingPacketSize", UintegerValue (streamingPacketSize));
   Config::SetDefault ("ns3::TrafficParameters::UseAqm", BooleanValue (useAqm));
+  Config::SetDefault ("ns3::TrafficParameters::PerFlowStat", BooleanValue (perFlowStat));
   Config::SetDefault ("ns3::TrafficParameters::SimulationTime", TimeValue (simulationTime));
 
   // Set TCP variant

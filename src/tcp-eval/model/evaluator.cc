@@ -44,26 +44,27 @@ Evaluator::GetTypeId (void)
 }
 
 Evaluator::Evaluator (std::string ScenarioName, uint32_t numFlows,
-                      std::string queueDisc,std::string tcp_varient, uint32_t pktSize,Ptr<QueueDisc> queue,Ptr<Node> node)
+                      std::string queueDisc,std::string tcp_varient, bool perFlowStat, uint32_t pktSize,Ptr<QueueDisc> queue,Ptr<Node> node)
 {
   m_numFlows = numFlows;
   m_flowsAdded = 0;
   m_packetSize = pktSize;
   m_currentAQM = queueDisc;
   m_queue = queue;
+  m_perFlowStat = perFlowStat;
   std::ifstream infile;
   infile.open ("latest_dir.dat");
   std::string default_directory;
   infile >> default_directory;
   m_device = node->GetDevice (0)->GetObject<PointToPointNetDevice> ();
-  std::string a = default_directory + '/' + ScenarioName + "/dat_files/enqueue_drop/" + tcp_varient + '-' + m_currentAQM;
-  m_queue->TraceConnectWithoutContext ("Enqueue", MakeBoundCallback (&Evaluator::PacketEnqueue,a));
-  a = default_directory + "/" + ScenarioName + "/dat_files/queue_delay/" + tcp_varient + "-" + m_currentAQM;
-  m_queue->TraceConnectWithoutContext ("Dequeue", MakeBoundCallback (&Evaluator::PacketDequeue,a));
-  a = default_directory + '/' + ScenarioName + "/dat_files/enqueue_drop/" + tcp_varient + '-' + m_currentAQM;
-  m_queue->TraceConnectWithoutContext ("Drop", MakeBoundCallback (&Evaluator::PacketDrop, a));
-  a = default_directory + '/' + ScenarioName + "/dat_files/throughput/" + tcp_varient + '-' + m_currentAQM;
-  m_device->TraceConnectWithoutContext ("PhyTxBegin", MakeBoundCallback (&Evaluator::PayloadSize, a));
+  std::string destinationfolder = default_directory + '/' + ScenarioName + "/dat_files/enqueue_drop/" + tcp_varient + '-' + m_currentAQM;
+  m_queue->TraceConnectWithoutContext ("Enqueue", MakeBoundCallback (&Evaluator::PacketEnqueue,destinationfolder, m_perFlowStat));
+  destinationfolder = default_directory + "/" + ScenarioName + "/dat_files/queue_delay/" + tcp_varient + "-" + m_currentAQM;
+  m_queue->TraceConnectWithoutContext ("Dequeue", MakeBoundCallback (&Evaluator::PacketDequeue,destinationfolder, m_perFlowStat));
+  destinationfolder = default_directory + '/' + ScenarioName + "/dat_files/enqueue_drop/" + tcp_varient + '-' + m_currentAQM;
+  m_queue->TraceConnectWithoutContext ("Drop", MakeBoundCallback (&Evaluator::PacketDrop, destinationfolder, m_perFlowStat));
+  destinationfolder = default_directory + '/' + ScenarioName + "/dat_files/throughput/" + tcp_varient + '-' + m_currentAQM;
+  m_device->TraceConnectWithoutContext ("PhyTxBegin", MakeBoundCallback (&Evaluator::PayloadSize, destinationfolder, m_perFlowStat));
   m_currentAQM.replace (m_currentAQM.begin (), m_currentAQM.begin () + 5, "");
 }
 
@@ -74,15 +75,15 @@ Evaluator::~Evaluator (void)
 void
 Evaluator::DestroyConnection ()
 {
-  std::string a;
-  m_queue->TraceDisconnectWithoutContext ("Enqueue", MakeBoundCallback (&Evaluator::PacketEnqueue, a));
-  m_queue->TraceDisconnectWithoutContext ("Dequeue", MakeBoundCallback (&Evaluator::PacketDequeue,a));
-  m_queue->TraceDisconnectWithoutContext ("Drop", MakeBoundCallback (&Evaluator::PacketDrop, a));
-  m_device->TraceDisconnectWithoutContext ("PhyTxBegin", MakeBoundCallback (&Evaluator::PayloadSize,a));
+  std::string destinationfolder;
+  m_queue->TraceDisconnectWithoutContext ("Enqueue", MakeBoundCallback (&Evaluator::PacketEnqueue, destinationfolder));
+  m_queue->TraceDisconnectWithoutContext ("Dequeue", MakeBoundCallback (&Evaluator::PacketDequeue,destinationfolder));
+  m_queue->TraceDisconnectWithoutContext ("Drop", MakeBoundCallback (&Evaluator::PacketDrop, destinationfolder));
+  m_device->TraceDisconnectWithoutContext ("PhyTxBegin", MakeBoundCallback (&Evaluator::PayloadSize,destinationfolder));
 }
 
 void
-Evaluator::PacketEnqueue (std::string a,Ptr<const QueueDiscItem> item)
+Evaluator::PacketEnqueue (std::string destinationfolder, bool perFlowStat,Ptr<const QueueDiscItem> item)
 {
   Ptr<Packet> p = item->GetPacket ();
   EvalTimestampTag tag;
@@ -102,7 +103,14 @@ Evaluator::PacketEnqueue (std::string a,Ptr<const QueueDiscItem> item)
   uint32_t destPort = h3.GetDestinationPort ();
   Ptr<OutputStreamWrapper> enqueueTimeFile;
   AsciiTraceHelper asciienqueueTime;
-  enqueueTimeFile = asciienqueueTime.CreateFileStream (std::string (a + "-" + std::to_string (srcPort) + std::to_string (destPort) +          std::to_string (src) + std::to_string (dest)  + "-enqueue.dat").c_str (),std::ios::out | std::ios::app);
+  if (!perFlowStat)
+    {
+      enqueueTimeFile = asciienqueueTime.CreateFileStream (std::string (destinationfolder + "-enqueue.dat").c_str (),std::ios::out | std::ios::app);
+    }
+  else
+    {
+      enqueueTimeFile = asciienqueueTime.CreateFileStream (std::string (destinationfolder + "-" + std::to_string (srcPort) + std::to_string (destPort) +          std::to_string (src) + std::to_string (dest)  + "-enqueue.dat").c_str (),std::ios::out | std::ios::app);
+    }
   *enqueueTimeFile->GetStream () << (iqdi->GetHeader ()).GetDestination ()
                                  << " "
                                  << Simulator::Now ().GetSeconds ()
@@ -110,7 +118,7 @@ Evaluator::PacketEnqueue (std::string a,Ptr<const QueueDiscItem> item)
 }
 
 void
-Evaluator::PacketDequeue (std::string a,Ptr<const QueueDiscItem> item)
+Evaluator::PacketDequeue (std::string destinationfolder, bool perFlowStat,Ptr<const QueueDiscItem> item)
 {
   Ptr<Packet> p = item->GetPacket ();
   EvalTimestampTag tag;
@@ -129,7 +137,14 @@ Evaluator::PacketDequeue (std::string a,Ptr<const QueueDiscItem> item)
   uint32_t destPort = h3.GetDestinationPort ();
   Ptr<OutputStreamWrapper> QDfile;
   AsciiTraceHelper asciiQD;
-  QDfile = asciiQD.CreateFileStream (std::string (a + "-" + std::to_string (srcPort) + std::to_string (destPort) + std::to_string (src) + std::to_string (dest)  + "-delay.dat").c_str (),std::ios::out | std::ios::app);
+  if (!perFlowStat)
+    {
+      QDfile = asciiQD.CreateFileStream (std::string (destinationfolder + "-delay.dat").c_str (),std::ios::out | std::ios::app);
+    }
+  else
+    {
+      QDfile = asciiQD.CreateFileStream (std::string (destinationfolder + "-" + std::to_string (srcPort) + std::to_string (destPort) + std::to_string (src) + std::to_string (dest)  + "-delay.dat").c_str (),std::ios::out | std::ios::app);
+    }
 
   *QDfile->GetStream () << Simulator::Now ().GetSeconds ()
                         << " "
@@ -139,7 +154,7 @@ Evaluator::PacketDequeue (std::string a,Ptr<const QueueDiscItem> item)
 }
 
 void
-Evaluator::PacketDrop (std::string a,Ptr<const QueueDiscItem> item)
+Evaluator::PacketDrop (std::string destinationfolder, bool perFlowStat,Ptr<const QueueDiscItem> item)
 {
   Ptr<Packet> p = item->GetPacket ();
   Ptr<const Ipv4QueueDiscItem> ipv4Item = DynamicCast<const Ipv4QueueDiscItem> (item);
@@ -157,7 +172,14 @@ Evaluator::PacketDrop (std::string a,Ptr<const QueueDiscItem> item)
   uint32_t destPort = h3.GetDestinationPort ();
   Ptr<OutputStreamWrapper> dropTimefile;
   AsciiTraceHelper asciiDropTime;
-  dropTimefile = asciiDropTime.CreateFileStream (std::string (a + "-" + std::to_string (srcPort) + std::to_string (destPort) + std::to_string (src) + std::to_string (dest)  + "-drop.dat").c_str (),std::ios::out | std::ios::app);
+  if (!perFlowStat)
+    {
+      dropTimefile = asciiDropTime.CreateFileStream (std::string (destinationfolder + "-drop.dat").c_str (),std::ios::out | std::ios::app);
+    }
+  else
+    {
+      dropTimefile = asciiDropTime.CreateFileStream (std::string (destinationfolder + "-" + std::to_string (srcPort) + std::to_string (destPort) + std::to_string (src) + std::to_string (dest)  + "-drop.dat").c_str (),std::ios::out | std::ios::app);
+    }
   *dropTimefile->GetStream () << (iqdi->GetHeader ()).GetDestination ()
                               << " "
                               << Simulator::Now ().GetSeconds ()
@@ -165,7 +187,7 @@ Evaluator::PacketDrop (std::string a,Ptr<const QueueDiscItem> item)
 }
 
 void
-Evaluator::PayloadSize (std::string a,Ptr<const Packet> packet /*, const Address & address*/)
+Evaluator::PayloadSize (std::string destinationfolder, bool perFlowStat, Ptr<const Packet> packet /*, const Address & address*/)
 {
   Packet pp = *packet;
   PppHeader h1;
@@ -182,7 +204,14 @@ Evaluator::PayloadSize (std::string a,Ptr<const Packet> packet /*, const Address
   uint32_t dest = ipDest.Get ();
   Ptr<OutputStreamWrapper> TPfile;
   AsciiTraceHelper asciiTP;
-  TPfile = asciiTP.CreateFileStream (std::string (a + "-" + std::to_string (srcPort) + std::to_string (destPort) + std::to_string (src) + std::to_string (dest)  + "-throughput.dat").c_str (),std::ios::out | std::ios::app);
+  if (!perFlowStat)
+    {
+      TPfile = asciiTP.CreateFileStream (std::string (destinationfolder + "-throughput.dat").c_str (),std::ios::out | std::ios::app);
+    }
+  else
+    {
+      TPfile = asciiTP.CreateFileStream (std::string (destinationfolder + "-" + std::to_string (srcPort) + std::to_string (destPort) + std::to_string (src) + std::to_string (dest)  + "-throughput.dat").c_str (),std::ios::out | std::ios::app);
+    }
   *TPfile->GetStream () << Simulator::Now ().GetSeconds ()
                         << " "
                         <<  packet->GetSize ()

@@ -12,10 +12,12 @@ int main (int argc, char *argv[])
   std::string useAqm = "false"; //use bool
   std::string queueName;
   std::string Aqm_Name = "";
+  std::string perFlowStat = "false";
   CommandLine cmd;
   cmd.AddValue ("scenarioName", "Scenario Name ", scenarioName);
   cmd.AddValue ("useAqm", "use Aqm", useAqm);
   cmd.AddValue ("Aqm_Name", "Name of the AQM if use Aqm is true", Aqm_Name);
+  cmd.AddValue ("perFlowStat", "perFlow statistics required", perFlowStat);
   cmd.Parse (argc,argv);
   if (useAqm == "true")
     {
@@ -50,11 +52,11 @@ int main (int argc, char *argv[])
         {
           if (useAqm == "false")
             {
-              run = "./waf --run \"drive-" + scenarioName + " " + "--useAqm=" + useAqm + " " + "--tcp_variant=" + transport_prot[i] + "\"";
+              run = "./waf --run \"drive-" + scenarioName + " " + "--useAqm=" + useAqm + " " + "--tcp_variant=" + transport_prot[i] + " " + "--PerFlowStat=" + perFlowStat+ "\"";
             }
           else
             {
-              run = "./waf --run \"drive-" + scenarioName + " " + "--useAqm=" + useAqm + " " + "--tcp_variant=" + transport_prot[i] + " " + "--Aqm_Name=" + Aqm_Name + "\"";
+              run = "./waf --run \"drive-" + scenarioName + " " + "--useAqm=" + useAqm + " " + "--tcp_variant=" + transport_prot[i] + " " + "--Aqm_Name=" + Aqm_Name + " " + "--PerFlowStat=" + perFlowStat + "\"";
             }
           system (run.c_str ());
           std::string proQdelThr = std::string ("python src/tcp-eval/generate-ellipseinput.py ") + scenarioName + " " + transport_prot[i] + " " +       queueName + " " + default_directory;
@@ -65,7 +67,7 @@ int main (int argc, char *argv[])
           system (Ellipse.c_str ());
         }
     }
-  std::string ProPerFlow = std::string ("python src/tcp-eval/generate-perflow.py ") + scenarioName + " " + default_directory;
+  std::string ProPerFlow = std::string ("python src/tcp-eval/draw-graphs.py ") + scenarioName + " " + default_directory;
   std::string PerFlow = ProPerFlow;
   system (PerFlow.c_str ());
   return(0);

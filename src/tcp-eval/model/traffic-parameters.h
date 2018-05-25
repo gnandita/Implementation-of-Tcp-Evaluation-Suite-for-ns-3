@@ -201,6 +201,9 @@ public:
 
   void SetAqmName (std::string tcp);
   std::string GetAqmName ();
+  
+  void SetPerFlowStat (bool perFlowStat);
+  bool IsPerFlowStatRequired () const;
 
 private:
   uint32_t    m_nFwdFtpFlows;           //!< Number of FTP flows on forward path (left -> right)
@@ -212,6 +215,7 @@ private:
   double      m_streamingRate;          //!< Bit rate of streaming flows in Kbps
   uint32_t    m_streamingPacketSize;    //!< Packet size of streaming flows in bytes
   bool        m_useAqm;                 //!< Enable or disable AQM in routers
+  bool        m_perFlowStat;
   Time        m_simulationTime;         //!< Total simulation time in seconds
   std::string m_tcpVarient;
   std::string m_aqm;

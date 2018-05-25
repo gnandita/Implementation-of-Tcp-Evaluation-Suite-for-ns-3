@@ -52,7 +52,7 @@ public:
 
   Evaluator (std::string ScenarioName,
              uint32_t numFlows,
-             std::string queueDisc,std::string tcp_varient,
+             std::string queueDisc,std::string tcp_varient,bool perFlowStat,
              uint32_t pktSize,Ptr<QueueDisc> queue,Ptr<Node> node);
 
   /**
@@ -81,15 +81,15 @@ public:
    }
 */
 private:
-  static void PacketEnqueue (std::string path,Ptr<const QueueDiscItem> item);
+  static void PacketEnqueue (std::string destinationfolder,bool perFlowStat, Ptr<const QueueDiscItem> item);
 
-  static void PacketDequeue (std::string path,Ptr<const QueueDiscItem> item);
-
-
-  static void PacketDrop (std::string path, Ptr<const QueueDiscItem> item);
+  static void PacketDequeue (std::string destinationfolder,bool perFlowStat, Ptr<const QueueDiscItem> item);
 
 
-  static void PayloadSize (std::string path, Ptr<const Packet> packet /*, const Address & address*/);
+  static void PacketDrop (std::string destinationfolder,bool perFlowStat, Ptr<const QueueDiscItem> item);
+
+
+  static void PayloadSize (std::string destinationfolder,bool perFlowStat, Ptr<const Packet> packet /*, const Address & address*/);
 
   std::string m_currentAQM;                       //!< AQM being currently simulated
   uint32_t m_numFlows;                            //!< The total number of flows
@@ -103,6 +103,7 @@ private:
   Ptr<OutputStreamWrapper> m_QDfile;              //!< File to store queue delay values
   uint64_t m_TPrecord;                            //!< The total amount of data received in 10ms
   Time m_lastTPrecord;                            //!< Last time the average goodput was calculated
+  bool m_perFlowStat;
   Ptr<OutputStreamWrapper> m_TPfile;              //!< File to store goodput values
   std::vector < Ptr < PacketSink > > m_sinks;      //!< List of packet sinks
   Ptr<OutputStreamWrapper> m_GPfile;              //!< File to store per flow statistics

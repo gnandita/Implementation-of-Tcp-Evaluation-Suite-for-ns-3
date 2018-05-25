@@ -214,7 +214,7 @@ ParkingLotTopology::CreateParkingLotTopology (Ptr<TrafficParameters> trafficPara
   // Push the stats of left most router to a file
   Ptr<Node> left = parkingLot.GetRouter (0);
 
-  Evaluator et = Evaluator ("parking-lot",nFlow,m_aqm,trafficParams->GetTcpVarient (),trafficParams->GetStreamingPacketSize (),m_queue,left);
+  Evaluator et = Evaluator ("parking-lot",nFlow,m_aqm,trafficParams->GetTcpVarient (),trafficParams->IsPerFlowStatRequired (),trafficParams->GetStreamingPacketSize (),m_queue,left);
   Simulator::Schedule (trafficParams->GetSimulationTime () /*simtime*/, &ParkingLotTopology::DestroyTrace, this, et);
   Simulator::Stop (Time::FromDouble (((trafficParams->GetSimulationTime ()).ToDouble (Time::S) + 5), Time::S));
   Simulator::Run ();
